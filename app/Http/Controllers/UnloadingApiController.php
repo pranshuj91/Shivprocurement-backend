@@ -7,6 +7,8 @@ use App\Models\Supplier;
 use App\Models\UnloadingEntry;
 use App\Models\MediaLog;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,6 +22,41 @@ class UnloadingApiController extends Controller
     public function getSuppliers()
     {
         return response()->json(Supplier::all());
+    }
+
+    public function signup(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name'  => 'required|string|max:255',
+            'phone' => 'required|string|unique:users,phone',
+            'pin'   => 'required|string|size:4',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::create([
+            'name'  => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'pin'   => $request->input('pin'), // Auto-hashed by casts() in User model
+            'role'  => 'supervisor',
+        ]);
+
+        $token = $user->createToken('SupervisorToken')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'phone' => $user->phone,
+            ],
+            'token' => $token
+        ], 201);
     }
 
     public function login(Request $request)
@@ -36,14 +73,27 @@ class UnloadingApiController extends Controller
             ], 422);
         }
 
-        $phone = $request->input('phone');
+        $user = User::where('phone', $request->input('phone'))
+                    ->where('role', 'supervisor')
+                    ->first();
+
+        if (!$user || !Hash::check($request->input('pin'), $user->pin)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid phone number or PIN.'
+            ], 401);
+        }
+
+        $token = $user->createToken('SupervisorToken')->plainTextToken;
 
         return response()->json([
+            'success' => true,
             'user' => [
-                'name' => 'Aditya Sharma',
-                'phone' => $phone,
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'phone' => $user->phone,
             ],
-            'token' => 'mock-token-for-shiv-procurement'
+            'token' => $token
         ]);
     }
 

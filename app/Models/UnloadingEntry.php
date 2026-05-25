@@ -27,6 +27,11 @@ class UnloadingEntry extends Model
         'latitude',
         'longitude',
         'gps_accuracy',
+        'gross_weight',
+        'tare_weight',
+        'net_weight',
+        'remarks',
+        'operator_name',
     ];
 
     public function unit(): BelongsTo
