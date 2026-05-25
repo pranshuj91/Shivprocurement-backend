@@ -156,21 +156,96 @@ class UnloadingApiController extends Controller
         $id = $request->input('id');
         $existing = UnloadingEntry::with(['unit', 'mediaLogs'])->find($id);
         if ($existing) {
+            $existing->update([
+                'unit_id'       => $request->input('unit_id'),
+                'truck_no'      => $request->input('truck_no'),
+                'purchase_type' => $request->input('purchase_type'),
+                'sourced_from'  => $request->input('sourced_from'),
+                'moisture'      => $request->input('moisture'),
+                'fm'            => $request->input('fm'),
+                'dm'            => $request->input('dm'),
+                'latitude'      => $request->input('latitude'),
+                'longitude'     => $request->input('longitude'),
+                'gps_accuracy'  => $request->input('gps_accuracy'),
+            ]);
+
+            // Keep track of preserved media logs
+            $keptPaths = [];
+            $incomingMedia = $request->input('media') ?? [];
+
+            foreach ($incomingMedia as $mediaItem) {
+                $base64Data = $mediaItem['data'] ?? '';
+                if (is_string($base64Data) && (str_starts_with($base64Data, '/storage/') || str_starts_with($base64Data, '/images/'))) {
+                    $keptPaths[] = $base64Data;
+                }
+            }
+
+            // Remove media logs that are no longer part of the entry
+            $existing->mediaLogs()->whereNotIn('file_path', $keptPaths)->delete();
+
+            // Process all media logs
+            foreach ($incomingMedia as $mediaItem) {
+                $type       = $mediaItem['type'] ?? 'unknown';
+                $base64Data = $mediaItem['data'] ?? '';
+
+                if (empty($base64Data)) continue;
+
+                // If this is an existing media path, preserve it.
+                if (is_string($base64Data) && (str_starts_with($base64Data, '/storage/') || str_starts_with($base64Data, '/images/'))) {
+                    $existing->mediaLogs()->where('file_path', $base64Data)->update([
+                        'caption' => $mediaItem['caption'] ?? null
+                    ]);
+                    continue;
+                }
+
+                // Decode new base64 data
+                $ext = 'jpg';
+                if ($type === 'audio')  $ext = 'm4a';
+                if ($type === 'video')  $ext = 'mp4';
+
+                if (preg_match('/^data:[^;]+;base64,(.*)$/', $base64Data, $matches)) {
+                    $raw = $matches[1];
+                    if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
+                    elseif (preg_match('/^data:audio\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
+                    elseif (preg_match('/^data:video\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
+                } else {
+                    $raw = $base64Data;
+                }
+
+                $decoded = base64_decode($raw);
+                if ($decoded !== false) {
+                    $filename = $type . '_' . uniqid() . '.' . $ext;
+                    $path = 'media/' . $filename;
+                    Storage::disk('public')->put($path, $decoded);
+
+                    $existing->mediaLogs()->create([
+                        'type'      => $type,
+                        'file_path' => '/storage/' . $path,
+                        'caption'   => $mediaItem['caption'] ?? null,
+                    ]);
+                }
+            }
+
+            $savedEntry = UnloadingEntry::find($id)->load(['unit', 'mediaLogs']);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Entry already exists (already synced)',
+                'message' => 'Entry updated and synced successfully',
                 'entry'   => [
-                    'id'            => $existing->id,
-                    'unit_id'       => $existing->unit_id,
-                    'truck_no'      => $existing->truck_no,
-                    'purchase_type' => $existing->purchase_type,
-                    'sourced_from'  => $existing->sourced_from,
-                    'moisture'      => $existing->moisture,
-                    'fm'            => $existing->fm,
-                    'dm'            => $existing->dm,
-                    'status'        => $existing->status,
-                    'created_at'    => $existing->created_at,
-                    'media_logs'    => $existing->mediaLogs,
+                    'id'            => $savedEntry->id,
+                    'unit_id'       => $savedEntry->unit_id,
+                    'truck_no'      => $savedEntry->truck_no,
+                    'purchase_type' => $savedEntry->purchase_type,
+                    'sourced_from'  => $savedEntry->sourced_from,
+                    'moisture'      => $savedEntry->moisture,
+                    'fm'            => $savedEntry->fm,
+                    'dm'            => $savedEntry->dm,
+                    'status'        => $savedEntry->status,
+                    'latitude'      => $savedEntry->latitude,
+                    'longitude'     => $savedEntry->longitude,
+                    'gps_accuracy'  => $savedEntry->gps_accuracy,
+                    'created_at'    => $savedEntry->created_at,
+                    'media_logs'    => $savedEntry->mediaLogs,
                 ],
             ]);
         }
