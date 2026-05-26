@@ -134,35 +134,23 @@ function updateRowLabBadge(row, entry) {
 
 let currentDrawerEntry = null;
 
-function openLabTestModalFromDrawer() {
-    if (currentDrawerEntry) {
-        openLabTestModal(currentDrawerEntry);
-    }
-}
-
 function refreshDrawerLabSection(entry) {
     currentDrawerEntry = entry;
     if (typeof logsEntriesById !== 'undefined' && entry?.id) {
         logsEntriesById[entry.id] = entry;
     }
-    const empty = document.getElementById('drawer-lab-empty');
+    const section = document.getElementById('drawer-lab-section');
     const content = document.getElementById('drawer-lab-content');
-    const btnLabel = document.getElementById('drawer-lab-btn-label');
-    if (!empty || !content) return;
+    if (!section || !content) return;
 
     const hasLab = entry.lab_test_status || entry.lab_name;
-    if (btnLabel) {
-        btnLabel.textContent = hasLab ? 'Edit Lab Test' : 'Add Lab Test';
-    }
 
     if (!hasLab) {
-        empty.classList.remove('hidden');
-        content.classList.add('hidden');
+        section.classList.add('hidden');
         return;
     }
 
-    empty.classList.add('hidden');
-    content.classList.remove('hidden');
+    section.classList.remove('hidden');
     document.getElementById('drawer-lab-name').textContent = entry.lab_name || '—';
     document.getElementById('drawer-lab-status').innerHTML = labStatusPillHtml(entry.lab_test_status || 'pending');
     document.getElementById('drawer-lab-moisture').textContent = entry.lab_moisture != null ? parseFloat(entry.lab_moisture).toFixed(1) + '%' : '—';

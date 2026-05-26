@@ -4,16 +4,22 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LabDashboardController;
 use App\Http\Controllers\LabTestController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return redirect()->route('admin.dashboard');
+    if (Auth::check()) {
+        return Auth::user()->role === 'lab'
+            ? redirect()->route('lab.dashboard')
+            : redirect()->route('admin.dashboard');
+    }
+
+    return redirect()->route('login');
 });
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/signup', [AuthController::class, 'showSignup'])->name('signup');
-Route::post('/signup', [AuthController::class, 'signup']);
+Route::redirect('/signup', '/login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Lab test — managers and lab users

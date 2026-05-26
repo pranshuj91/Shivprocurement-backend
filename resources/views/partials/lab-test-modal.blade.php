@@ -1,5 +1,5 @@
 <!-- Lab Test Modal -->
-<div id="lab-test-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4">
+<div id="lab-test-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[70] flex items-center justify-center hidden opacity-0 transition-opacity duration-300 p-4" onclick="if (event.target === this) closeLabTestModal()">
     <div class="bg-white border border-zinc-200 rounded-2xl w-full max-w-lg shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col text-left max-h-[90vh] overflow-hidden">
         <div class="flex justify-between items-center border-b border-zinc-100 px-6 py-4 shrink-0">
             <div class="flex items-center gap-3">

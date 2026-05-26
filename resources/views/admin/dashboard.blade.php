@@ -1478,7 +1478,7 @@
     </main>
 
     <!-- Slide-over Drawer Backdrop -->
-    <div id="drawer-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0 pointer-events-none" onclick="closeDrawer()"></div>
+    <div id="drawer-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 hidden transition-opacity duration-300 opacity-0 cursor-pointer" onclick="closeDrawer()" aria-hidden="true"></div>
 
     <!-- Details Overlay Drawer -->
     <div id="drawer" class="hidden fixed top-0 right-0 h-full w-full sm:w-[500px] md:w-[600px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-out border-l border-zinc-200 flex flex-col">
@@ -1542,36 +1542,27 @@
                 </div>
             </div>
 
-            <!-- Lab test results -->
-            <div id="drawer-lab-section" class="space-y-3">
-                <div class="flex items-center justify-between gap-2">
-                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Lab test results</h4>
-                    <button type="button" id="drawer-lab-edit-btn" onclick="openLabTestModalFromDrawer()"
-                        class="lab-test-btn lab-test-btn--xs">
-                        <i data-lucide="flask-conical" class="w-3 h-3"></i> <span id="drawer-lab-btn-label">Add Lab Test</span>
-                    </button>
-                </div>
-                <div id="drawer-lab-empty" class="hidden bg-zinc-50 border border-dashed border-zinc-200 rounded-lg p-4 text-center">
-                    <p class="text-xs text-zinc-500">No lab test recorded for this entry yet.</p>
-                </div>
-                <div id="drawer-lab-content" class="bg-violet-50/50 border border-violet-100 rounded-lg p-4 space-y-3 hidden">
+            <!-- Lab test results (read-only in drawer; add/edit via table button → modal) -->
+            <div id="drawer-lab-section" class="space-y-3 hidden">
+                <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Lab test results</h4>
+                <div id="drawer-lab-content" class="bg-emerald-50/60 border border-emerald-100 rounded-lg p-4 space-y-3">
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                            <span class="text-[9px] uppercase font-bold tracking-wider text-violet-600/80">Testing lab</span>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-emerald-800/80">Testing lab</span>
                             <p class="text-sm font-semibold text-zinc-800 mt-0.5" id="drawer-lab-name">—</p>
                         </div>
                         <div id="drawer-lab-status"></div>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
-                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                        <div class="bg-white border border-emerald-100 rounded-lg p-2.5 text-center">
                             <span class="text-[9px] uppercase font-bold text-zinc-400">Lab moisture</span>
                             <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-moisture">—</p>
                         </div>
-                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                        <div class="bg-white border border-emerald-100 rounded-lg p-2.5 text-center">
                             <span class="text-[9px] uppercase font-bold text-zinc-400">Lab F.M.</span>
                             <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-fm">—</p>
                         </div>
-                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                        <div class="bg-white border border-emerald-100 rounded-lg p-2.5 text-center">
                             <span class="text-[9px] uppercase font-bold text-zinc-400">Lab D.M.</span>
                             <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-dm">—</p>
                         </div>
@@ -1704,7 +1695,6 @@
  
         <!-- Drawer Footer Controls -->
         <div id="drawer-actions-footer" class="p-6 border-t border-zinc-200 bg-zinc-50/50 flex gap-3 shrink-0">
-            <!-- Action buttons -->
             <button onclick="promptRemarks('approved')" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-700/10">
                 <i data-lucide="check-circle" class="w-4 h-4"></i> Approve Log
             </button>
@@ -1886,7 +1876,7 @@
                 }
             });
 
-            // Lab test button (delegated — works even if row JSON fails)
+            // Lab test button — opens add/edit modal only
             const logsTableBody = document.getElementById('logs-table-body');
             if (logsTableBody) {
                 logsTableBody.addEventListener('click', function(e) {
@@ -1899,6 +1889,20 @@
                     }
                 });
             }
+
+            // Close drawer: Escape key or click dimmed backdrop
+            document.addEventListener('keydown', function(e) {
+                if (e.key !== 'Escape') return;
+                const drawer = document.getElementById('drawer');
+                const labModal = document.getElementById('lab-test-modal');
+                if (labModal && !labModal.classList.contains('hidden')) {
+                    closeLabTestModal();
+                    return;
+                }
+                if (drawer && !drawer.classList.contains('hidden')) {
+                    closeDrawer();
+                }
+            });
 
             // Row click listener
             document.querySelectorAll('.select-row').forEach(row => {
@@ -2117,6 +2121,7 @@
             const backdrop = document.getElementById('drawer-backdrop');
             drawer.classList.remove('hidden');
             backdrop.classList.remove('hidden');
+            backdrop.setAttribute('aria-hidden', 'false');
             setTimeout(() => {
                 backdrop.classList.remove('opacity-0');
                 backdrop.classList.add('opacity-100');
@@ -2125,6 +2130,12 @@
         }
 
         function closeDrawer() {
+            const labModal = document.getElementById('lab-test-modal');
+            if (labModal && !labModal.classList.contains('hidden')) {
+                closeLabTestModal();
+                return;
+            }
+
             const drawer = document.getElementById('drawer');
             const backdrop = document.getElementById('drawer-backdrop');
             drawer.classList.add('translate-x-full');
@@ -2139,9 +2150,13 @@
 
             setTimeout(() => {
                 backdrop.classList.add('hidden');
+                backdrop.setAttribute('aria-hidden', 'true');
                 drawer.classList.add('hidden');
+                currentDrawerEntry = null;
             }, 300);
         }
+
+        window.closeDrawer = closeDrawer;
 
         let pendingStatusTarget = null;
 

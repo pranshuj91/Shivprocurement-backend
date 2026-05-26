@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -21,6 +20,7 @@ class AuthController extends Controller
                 default => redirect()->route('admin.dashboard'),
             };
         }
+
         return view('auth.login');
     }
 
@@ -29,17 +29,22 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'username' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
+        $email = $this->resolveEmailFromLogin($request->input('username'));
+
+        if (Auth::attempt(
+            ['email' => $email, 'password' => $request->input('password')],
+            $request->boolean('remember')
+        )) {
             $user = Auth::user();
             if (! in_array($user->role, ['manager', 'lab'], true)) {
                 Auth::logout();
                 throw ValidationException::withMessages([
-                    'email' => 'Access denied. Use the mobile app for supervisor login.',
+                    'username' => 'Access denied. Use the mobile app for supervisor login.',
                 ]);
             }
 
@@ -52,44 +57,26 @@ class AuthController extends Controller
         }
 
         throw ValidationException::withMessages([
-            'email' => 'The provided credentials do not match our records.',
+            'username' => 'Invalid username or password.',
         ]);
     }
 
     /**
-     * Show the signup form.
+     * Map login username to the stored email address.
      */
-    public function showSignup()
+    private function resolveEmailFromLogin(string $login): string
     {
-        if (Auth::check() && Auth::user()->role === 'manager') {
-            return redirect('/admin');
+        $login = trim($login);
+
+        if (str_contains($login, '@')) {
+            return strtolower($login);
         }
-        return view('auth.signup');
-    }
 
-    /**
-     * Handle the signup request.
-     */
-    public function signup(Request $request)
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
-
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'], // cast in User model hashes it automatically
-            'role' => 'manager',
-        ]);
-
-        Auth::login($user);
-
-        $request->session()->regenerate();
-
-        return redirect('/admin');
+        return match (strtolower($login)) {
+            'admin' => 'admin@shivedibles.com',
+            'lab' => 'lab@shivedibles.com',
+            default => strtolower($login),
+        };
     }
 
     /**
@@ -102,6 +89,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }

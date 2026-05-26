@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Seed Manager/Supervisor User for testing API authentication
+        // Web admin login: username "admin" → admin@shivedibles.com / password "password"
         User::updateOrCreate(
             ['email' => 'admin@shivedibles.com'],
             [
-                'name' => 'Admin Manager',
-                'password' => 'password', // hashed automatically by cast in User model
+                'name' => 'Admin',
+                'password' => 'password',
                 'role' => 'manager',
             ]
         );
