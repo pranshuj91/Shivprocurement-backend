@@ -21,5 +21,7 @@ Route::middleware(['auth', 'manager'])->group(function () {
     Route::post('/admin/entries/{id}/status', [AdminDashboardController::class, 'updateStatus'])->name('admin.entries.status');
     Route::post('/admin/units', [AdminDashboardController::class, 'storeUnit'])->name('admin.units.store');
     Route::post('/admin/supervisors', [AdminDashboardController::class, 'storeSupervisor'])->name('admin.supervisors.store');
+    Route::post('/admin/settings/quality', [AdminDashboardController::class, 'updateQualitySettings'])->name('admin.settings.quality');
+    Route::post('/admin/settings/profile', [AdminDashboardController::class, 'updateProfile'])->name('admin.settings.profile');
 });
 

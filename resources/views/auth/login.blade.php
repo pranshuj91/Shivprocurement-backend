@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Shiv Edibles Procurement Portal</title>
     
-    <!-- Instrument Sans Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -17,22 +16,12 @@
 
     <style>
         body {
-            font-family: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
             background-color: #fafafa;
             background-image: radial-gradient(circle at top right, #f0fdf4 0%, #fafafa 100%);
         }
 
-        /* 2px font size increase overrides */
-        .text-\[9px\] { font-size: 11px !important; }
-        .text-\[10px\] { font-size: 12px !important; }
-        .text-\[11px\] { font-size: 13px !important; }
-        .text-xs { font-size: 14px !important; }
-        .text-sm { font-size: 16px !important; }
-        .text-base { font-size: 18px !important; }
-        .text-lg { font-size: 20px !important; }
-        .text-xl { font-size: 22px !important; }
-        .text-2xl { font-size: 26px !important; }
     </style>
 </head>
 <body class="text-zinc-800 min-h-screen flex items-center justify-center p-4">

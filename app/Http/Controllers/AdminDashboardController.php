@@ -2,14 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProcurementSetting;
 use App\Models\Unit;
 use App\Models\UnloadingEntry;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class AdminDashboardController extends Controller
 {
     public function index(Request $request)
     {
+        $settings = ProcurementSetting::current();
+
         // 1. Calculate stats (independent of listing filters)
         $entriesLast7Days = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->get();
 
@@ -21,16 +28,14 @@ class AdminDashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $dayStart = now()->subDays($i)->startOfDay();
             $dayEnd = now()->subDays($i)->endOfDay();
-            
+
             $dayEntries = $entriesLast7Days->filter(function ($e) use ($dayStart, $dayEnd) {
                 return $e->created_at >= $dayStart && $e->created_at <= $dayEnd;
             });
-            
+
             $totalCounts[] = $dayEntries->count();
             $pendingCounts[] = $dayEntries->where('status', 'pending')->count();
-            $outCounts[] = $dayEntries->filter(function ($e) {
-                return $e->moisture > 10.0 || $e->fm > 2.0 || $e->dm > 2.0;
-            })->count();
+            $outCounts[] = $dayEntries->filter(fn ($e) => $settings->entryIsOutOfSpec($e))->count();
             $approvedCounts[] = $dayEntries->where('status', 'approved')->count();
         }
 
@@ -40,26 +45,30 @@ class AdminDashboardController extends Controller
         $pendingCurrent = UnloadingEntry::where('status', 'pending')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
         $pendingPrevious = UnloadingEntry::where('status', 'pending')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
 
-        $outCurrent = UnloadingEntry::where(function ($q) {
-            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
-        })->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
-        $outPrevious = UnloadingEntry::where(function ($q) {
-            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
-        })->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+        $outCurrent = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())
+            ->where(function ($q) use ($settings) {
+                $settings->applyOutOfSpecScope($q);
+            })
+            ->count();
+        $outPrevious = UnloadingEntry::whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])
+            ->where(function ($q) use ($settings) {
+                $settings->applyOutOfSpecScope($q);
+            })
+            ->count();
 
         $approvedCurrent = UnloadingEntry::where('status', 'approved')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
         $approvedPrevious = UnloadingEntry::where('status', 'approved')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $outOfSpecCount = UnloadingEntry::where(function ($q) use ($settings) {
+            $settings->applyOutOfSpecScope($q);
+        })->count();
 
         $stats = [
             'total' => UnloadingEntry::count(),
             'pending' => UnloadingEntry::where('status', 'pending')->count(),
             'approved' => UnloadingEntry::where('status', 'approved')->count(),
             'flagged' => UnloadingEntry::where('status', 'flagged')->count(),
-            'out_of_spec' => UnloadingEntry::where(function ($query) {
-                $query->where('moisture', '>', 10.0)
-                      ->orWhere('fm', '>', 2.0)
-                      ->orWhere('dm', '>', 2.0);
-            })->count(),
+            'out_of_spec' => $outOfSpecCount,
             'total_trend' => $this->calculateTrendPercentage($totalCurrent, $totalPrevious),
             'pending_trend' => $this->calculateTrendPercentage($pendingCurrent, $pendingPrevious),
             'out_of_spec_trend' => $this->calculateTrendPercentage($outCurrent, $outPrevious),
@@ -90,11 +99,7 @@ class AdminDashboardController extends Controller
         if ($request->filled('status')) {
             $status = $request->input('status');
             if ($status === 'out_of_spec') {
-                $query->where(function ($q) {
-                    $q->where('moisture', '>', 10.0)
-                      ->orWhere('fm', '>', 2.0)
-                      ->orWhere('dm', '>', 2.0);
-                });
+                $settings->applyOutOfSpecScope($query);
             } else {
                 $query->where('status', $status);
             }
@@ -111,31 +116,89 @@ class AdminDashboardController extends Controller
             }
         }
 
-        $moistureTrend = UnloadingEntry::orderBy('created_at', 'desc')
-            ->take(15)
-            ->get()
-            ->reverse()
-            ->pluck('moisture')
-            ->toArray();
+        $entries = $query->paginate(15)->withQueryString();
 
-        $mandiLeaderboard = UnloadingEntry::select('sourced_from')
-            ->selectRaw('AVG(moisture) as avg_moisture')
+        $units = Unit::withCount([
+            'unloadingEntries',
+            'unloadingEntries as approved_count' => fn ($q) => $q->where('status', 'approved'),
+            'unloadingEntries as pending_count' => fn ($q) => $q->where('status', 'pending'),
+        ])->get();
+
+        $unitAnalytics = $units->map(function ($unit) use ($settings) {
+            $avgMoisture = UnloadingEntry::where('unit_id', $unit->id)->avg('moisture') ?? 0;
+            $outOfSpec = UnloadingEntry::where('unit_id', $unit->id)
+                ->where(function ($q) use ($settings) {
+                    $settings->applyOutOfSpecScope($q);
+                })
+                ->count();
+            $total = $unit->unloading_entries_count;
+            $approvalRate = $total > 0 ? round(($unit->approved_count / $total) * 100) : 0;
+
+            return (object) [
+                'unit' => $unit,
+                'total' => $total,
+                'approved' => $unit->approved_count,
+                'pending' => $unit->pending_count,
+                'avg_moisture' => round((float) $avgMoisture, 1),
+                'out_of_spec' => $outOfSpec,
+                'approval_rate' => $approvalRate,
+            ];
+        });
+
+        $supervisors = User::orderBy('role', 'asc')->get();
+
+        $analytics = [
+            'avg_moisture' => round((float) (UnloadingEntry::avg('moisture') ?? 0), 1),
+            'avg_fm' => round((float) (UnloadingEntry::avg('fm') ?? 0), 1),
+            'avg_dm' => round((float) (UnloadingEntry::avg('dm') ?? 0), 1),
+            'pass_rate' => $stats['total'] > 0 ? round(($stats['approved'] / $stats['total']) * 100) : 0,
+            'status_rows' => [
+                ['key' => 'approved', 'label' => 'Approved', 'count' => $stats['approved'], 'class' => 'approved'],
+                ['key' => 'pending', 'label' => 'Pending', 'count' => $stats['pending'], 'class' => 'pending'],
+                ['key' => 'flagged', 'label' => 'Flagged', 'count' => $stats['flagged'], 'class' => 'flagged'],
+                ['key' => 'rejected', 'label' => 'Rejected', 'count' => UnloadingEntry::where('status', 'rejected')->count(), 'class' => 'rejected'],
+            ],
+        ];
+
+        $weeklyActivity = [];
+        $weeklyMax = 1;
+        for ($i = 6; $i >= 0; $i--) {
+            $day = now()->subDays($i);
+            $count = UnloadingEntry::whereDate('created_at', $day)->count();
+            $weeklyMax = max($weeklyMax, $count);
+            $weeklyActivity[] = [
+                'label' => $day->format('D'),
+                'date' => $day->format('d M'),
+                'count' => $count,
+            ];
+        }
+
+        $topSuppliers = UnloadingEntry::select('sourced_from')
             ->selectRaw('COUNT(*) as total_logs')
-            ->selectRaw('SUM(CASE WHEN status = "flagged" OR status = "rejected" THEN 1 ELSE 0 END) as issue_logs')
+            ->selectRaw('AVG(moisture) as avg_moisture')
+            ->selectRaw('SUM(CASE WHEN status IN ("flagged", "rejected") THEN 1 ELSE 0 END) as issue_logs')
             ->groupBy('sourced_from')
-            ->orderBy('avg_moisture', 'asc')
-            ->take(5)
+            ->orderByDesc('total_logs')
+            ->take(6)
             ->get();
 
-        $entries = $query->paginate(15)->withQueryString();
-        $units = Unit::all();
-        $supervisors = \App\Models\User::orderBy('role', 'asc')->get();
-
-        return view('admin.dashboard', compact('entries', 'stats', 'units', 'moistureTrend', 'mandiLeaderboard', 'supervisors'));
+        return view('admin.dashboard', compact(
+            'entries',
+            'stats',
+            'units',
+            'unitAnalytics',
+            'supervisors',
+            'settings',
+            'analytics',
+            'weeklyActivity',
+            'weeklyMax',
+            'topSuppliers',
+        ));
     }
 
     public function getStatsJson()
     {
+        $settings = ProcurementSetting::current();
         $entriesLast7Days = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->get();
 
         $totalCounts = [];
@@ -146,16 +209,14 @@ class AdminDashboardController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $dayStart = now()->subDays($i)->startOfDay();
             $dayEnd = now()->subDays($i)->endOfDay();
-            
+
             $dayEntries = $entriesLast7Days->filter(function ($e) use ($dayStart, $dayEnd) {
                 return $e->created_at >= $dayStart && $e->created_at <= $dayEnd;
             });
-            
+
             $totalCounts[] = $dayEntries->count();
             $pendingCounts[] = $dayEntries->where('status', 'pending')->count();
-            $outCounts[] = $dayEntries->filter(function ($e) {
-                return $e->moisture > 10.0 || $e->fm > 2.0 || $e->dm > 2.0;
-            })->count();
+            $outCounts[] = $dayEntries->filter(fn ($e) => $settings->entryIsOutOfSpec($e))->count();
             $approvedCounts[] = $dayEntries->where('status', 'approved')->count();
         }
 
@@ -165,12 +226,16 @@ class AdminDashboardController extends Controller
         $pendingCurrent = UnloadingEntry::where('status', 'pending')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
         $pendingPrevious = UnloadingEntry::where('status', 'pending')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
 
-        $outCurrent = UnloadingEntry::where(function ($q) {
-            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
-        })->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
-        $outPrevious = UnloadingEntry::where(function ($q) {
-            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
-        })->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+        $outCurrent = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())
+            ->where(function ($q) use ($settings) {
+                $settings->applyOutOfSpecScope($q);
+            })
+            ->count();
+        $outPrevious = UnloadingEntry::whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])
+            ->where(function ($q) use ($settings) {
+                $settings->applyOutOfSpecScope($q);
+            })
+            ->count();
 
         $approvedCurrent = UnloadingEntry::where('status', 'approved')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
         $approvedPrevious = UnloadingEntry::where('status', 'approved')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
@@ -182,10 +247,8 @@ class AdminDashboardController extends Controller
                 'pending' => UnloadingEntry::where('status', 'pending')->count(),
                 'approved' => UnloadingEntry::where('status', 'approved')->count(),
                 'flagged' => UnloadingEntry::where('status', 'flagged')->count(),
-                'out_of_spec' => UnloadingEntry::where(function ($query) {
-                    $query->where('moisture', '>', 10.0)
-                          ->orWhere('fm', '>', 2.0)
-                          ->orWhere('dm', '>', 2.0);
+                'out_of_spec' => UnloadingEntry::where(function ($q) use ($settings) {
+                    $settings->applyOutOfSpecScope($q);
                 })->count(),
                 'total_trend' => $this->calculateTrendPercentage($totalCurrent, $totalPrevious),
                 'pending_trend' => $this->calculateTrendPercentage($pendingCurrent, $pendingPrevious),
@@ -195,7 +258,54 @@ class AdminDashboardController extends Controller
                 'pending_sparkline' => $this->generateSparklinePath($pendingCounts),
                 'out_of_spec_sparkline' => $this->generateSparklinePath($outCounts),
                 'approved_sparkline' => $this->generateSparklinePath($approvedCounts),
-            ]
+            ],
+        ]);
+    }
+
+    public function updateQualitySettings(Request $request)
+    {
+        $data = $request->validate([
+            'moisture_threshold' => ['required', 'numeric', 'min:0', 'max:100'],
+            'fm_threshold' => ['required', 'numeric', 'min:0', 'max:100'],
+            'dm_threshold' => ['required', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        $settings = ProcurementSetting::current();
+        $settings->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Quality limits updated successfully.',
+            'settings' => $settings->fresh()->toThresholdArray(),
+        ]);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+
+        if (! empty($data['password'])) {
+            $user->password = $data['password'];
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profile updated successfully.',
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
         ]);
     }
 
@@ -240,7 +350,7 @@ class AdminDashboardController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Procurement center added successfully.',
-            'unit' => $unit
+            'unit' => $unit,
         ]);
     }
 
@@ -252,17 +362,17 @@ class AdminDashboardController extends Controller
             'pin' => 'required|string|digits:4',
         ]);
 
-        $supervisor = \App\Models\User::create([
+        $supervisor = User::create([
             'name' => $request->input('name'),
             'phone' => $request->input('phone'),
-            'pin' => \Illuminate\Support\Facades\Hash::make($request->input('pin')),
+            'pin' => Hash::make($request->input('pin')),
             'role' => 'supervisor',
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Supervisor added successfully.',
-            'supervisor' => $supervisor
+            'supervisor' => $supervisor,
         ]);
     }
 
@@ -273,7 +383,8 @@ class AdminDashboardController extends Controller
         }
         $diff = (($current - $previous) / $previous) * 100;
         $sign = $diff >= 0 ? '+' : '';
-        return $sign . round($diff) . '%';
+
+        return $sign.round($diff).'%';
     }
 
     private function generateSparklinePath(array $counts): string
@@ -281,17 +392,18 @@ class AdminDashboardController extends Controller
         $min = min($counts);
         $max = max($counts);
         $range = $max - $min;
-        
+
         $points = [];
         foreach ($counts as $i => $c) {
-            $x = $i * (120 / 6); // width 120
+            $x = $i * (120 / 6);
             if ($range == 0) {
-                $y = 15; // middle
+                $y = 15;
             } else {
-                $y = 30 - (($c - $min) / $range) * 20 - 5; // height 30, with 5px padding
+                $y = 30 - (($c - $min) / $range) * 20 - 5;
             }
             $points[] = "$x,$y";
         }
-        return "M " . implode(" L ", $points);
+
+        return 'M '.implode(' L ', $points);
     }
 }
