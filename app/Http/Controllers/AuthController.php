@@ -14,8 +14,12 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->role === 'manager') {
-            return redirect('/admin');
+        if (Auth::check()) {
+            return match (Auth::user()->role) {
+                'lab' => redirect()->route('lab.dashboard'),
+                'manager' => redirect()->route('admin.dashboard'),
+                default => redirect()->route('admin.dashboard'),
+            };
         }
         return view('auth.login');
     }
@@ -32,16 +36,19 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-            if ($user->role !== 'manager') {
+            if (! in_array($user->role, ['manager', 'lab'], true)) {
                 Auth::logout();
                 throw ValidationException::withMessages([
-                    'email' => 'Access denied. Only managers can log in to the web admin portal.',
+                    'email' => 'Access denied. Use the mobile app for supervisor login.',
                 ]);
             }
 
             $request->session()->regenerate();
 
-            return redirect()->intended('/admin');
+            return match ($user->role) {
+                'lab' => redirect()->intended(route('lab.dashboard')),
+                default => redirect()->intended(route('admin.dashboard')),
+            };
         }
 
         throw ValidationException::withMessages([

@@ -80,7 +80,7 @@ class AdminDashboardController extends Controller
         ];
 
         // 2. Build entries query with filters
-        $query = UnloadingEntry::with(['unit', 'mediaLogs'])
+        $query = UnloadingEntry::with(['unit', 'mediaLogs', 'labRecordedBy'])
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('search')) {
@@ -117,6 +117,10 @@ class AdminDashboardController extends Controller
         }
 
         $entries = $query->paginate(15)->withQueryString();
+
+        $logsEntriesById = $entries->getCollection()->mapWithKeys(
+            fn (UnloadingEntry $entry) => [$entry->id => $entry]
+        );
 
         $units = Unit::withCount([
             'unloadingEntries',
@@ -184,6 +188,7 @@ class AdminDashboardController extends Controller
 
         return view('admin.dashboard', compact(
             'entries',
+            'logsEntriesById',
             'stats',
             'units',
             'unitAnalytics',

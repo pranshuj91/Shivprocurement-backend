@@ -33,6 +33,15 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'lab@shivedibles.com'],
+            [
+                'name' => 'Lab Technician',
+                'password' => 'password',
+                'role' => 'lab',
+            ]
+        );
+
         // 2. Seed crushing units
         $units = [
             [

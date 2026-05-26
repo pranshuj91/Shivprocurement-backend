@@ -32,7 +32,31 @@ class UnloadingEntry extends Model
         'net_weight',
         'remarks',
         'operator_name',
+        'lab_name',
+        'lab_test_status',
+        'lab_moisture',
+        'lab_fm',
+        'lab_dm',
+        'lab_recorded_at',
+        'lab_recorded_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'lab_recorded_at' => 'datetime',
+        ];
+    }
+
+    public function hasLabTest(): bool
+    {
+        return $this->lab_name !== null && $this->lab_test_status !== null;
+    }
+
+    public function labRecordedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'lab_recorded_by');
+    }
 
     public function unit(): BelongsTo
     {

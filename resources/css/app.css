@@ -42,3 +42,33 @@
         line-height: 1.45;
     }
 }
+
+@layer components {
+    .lab-test-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background-color: #0d2818;
+        color: #fff;
+        border: 1px solid #0d2818;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: background-color 0.15s, border-color 0.15s;
+        cursor: pointer;
+    }
+
+    .lab-test-btn:hover {
+        background-color: #163a23;
+        border-color: #163a23;
+    }
+
+    .lab-test-btn--sm {
+        font-size: 13px;
+        padding: 0.375rem 0.625rem;
+    }
+
+    .lab-test-btn--xs {
+        font-size: 12px;
+        padding: 0.25rem 0.5rem;
+    }
+}

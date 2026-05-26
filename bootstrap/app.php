@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'manager' => \App\Http\Middleware\CheckManagerRole::class,
+            'lab' => \App\Http\Middleware\CheckLabRole::class,
+            'portal' => \App\Http\Middleware\CheckPortalRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

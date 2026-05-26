@@ -575,6 +575,52 @@
         #drawer.hidden {
             display: none !important;
         }
+        #lab-test-modal.hidden {
+            display: none !important;
+        }
+        #lab-test-modal:not(.hidden) {
+            display: flex !important;
+        }
+
+        /* Lab test action button — inline so it works without Vite build */
+        .lab-test-btn {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            white-space: nowrap;
+            background-color: #0d2818;
+            color: #fff;
+            border: 1px solid #0d2818;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+            line-height: 1.25;
+        }
+        .lab-test-btn:hover {
+            background-color: #163a23;
+            border-color: #163a23;
+        }
+        .lab-test-btn--sm {
+            font-size: 12px;
+            padding: 0.4rem 0.75rem;
+        }
+        .lab-test-btn--xs {
+            font-size: 11px;
+            padding: 0.3rem 0.55rem;
+        }
+        .lab-test-btn svg {
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+        }
+        .logs-table .col-actions {
+            min-width: 8.5rem;
+            width: 8.5rem;
+        }
     </style>
 </head>
 <body class="bg-[#f5f8f5] text-zinc-900 h-screen w-screen overflow-hidden flex">
@@ -918,10 +964,11 @@
                                         <th>Source</th>
                                         <th class="text-center">Quality</th>
                                         <th class="text-center">Status</th>
+                                        <th class="text-center col-actions">Actions</th>
                                         <th class="text-right">Received</th>
                                     </tr>
                                 </thead>
-                                <tbody class="text-sm text-zinc-700">
+                                <tbody id="logs-table-body" class="text-sm text-zinc-700">
                                     @forelse($entries as $entry)
                                         @php
                                             $sourceLabel = $entry->sourced_from ?? 'Spot Buyer';
@@ -929,7 +976,7 @@
                                         @endphp
                                         <tr class="select-row group"
                                             data-id="{{ $entry->id }}"
-                                            data-json="{{ json_encode($entry) }}">
+                                            data-entry-id="{{ $entry->id }}">
                                             <td class="whitespace-nowrap">
                                                 <span class="logs-id-badge">#{{ $entry->id }}</span>
                                             </td>
@@ -975,15 +1022,39 @@
                                                 </div>
                                             </td>
                                             <td class="text-center row-status-cell whitespace-nowrap">
-                                                @if($entry->status === 'approved')
-                                                    <span class="status-pill status-pill--approved"><span class="status-pill__dot"></span>Approved</span>
-                                                @elseif($entry->status === 'flagged')
-                                                    <span class="status-pill status-pill--flagged"><span class="status-pill__dot"></span>Flagged</span>
-                                                @elseif($entry->status === 'rejected')
-                                                    <span class="status-pill status-pill--rejected"><span class="status-pill__dot"></span>Rejected</span>
-                                                @else
-                                                    <span class="status-pill status-pill--pending"><span class="status-pill__dot"></span>Pending</span>
-                                                @endif
+                                                <div class="flex flex-col items-center gap-1">
+                                                    @if($entry->status === 'approved')
+                                                        <span class="status-pill status-pill--approved"><span class="status-pill__dot"></span>Approved</span>
+                                                    @elseif($entry->status === 'flagged')
+                                                        <span class="status-pill status-pill--flagged"><span class="status-pill__dot"></span>Flagged</span>
+                                                    @elseif($entry->status === 'rejected')
+                                                        <span class="status-pill status-pill--rejected"><span class="status-pill__dot"></span>Rejected</span>
+                                                    @else
+                                                        <span class="status-pill status-pill--pending"><span class="status-pill__dot"></span>Pending</span>
+                                                    @endif
+                                                    @if($entry->lab_test_status)
+                                                        @php
+                                                            $labPillClass = match($entry->lab_test_status) {
+                                                                'pass' => 'approved',
+                                                                'fail' => 'rejected',
+                                                                'retest' => 'flagged',
+                                                                default => 'pending',
+                                                            };
+                                                        @endphp
+                                                        <span class="lab-test-badge inline-flex">
+                                                            <span class="status-pill status-pill--{{ $labPillClass }}"><span class="status-pill__dot"></span>Lab: {{ ucfirst($entry->lab_test_status) }}</span>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td class="text-center col-actions" data-no-row-click>
+                                                <button type="button"
+                                                    data-entry-id="{{ $entry->id }}"
+                                                    onclick="event.stopPropagation(); openLabTestModalFromRow(this)"
+                                                    class="lab-test-row-btn lab-test-btn lab-test-btn--sm">
+                                                    <i data-lucide="flask-conical" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                                                    <span>{{ $entry->lab_test_status ? 'Edit Lab Test' : 'Add Lab Test' }}</span>
+                                                </button>
                                             </td>
                                             <td class="text-right whitespace-nowrap">
                                                 <div class="flex items-center justify-end gap-2">
@@ -997,7 +1068,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7">
+                                            <td colspan="8">
                                                 <div class="py-16 px-6 text-center">
                                                     <div class="mx-auto w-14 h-14 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-400 mb-4">
                                                         <i data-lucide="inbox" class="w-7 h-7"></i>
@@ -1471,6 +1542,46 @@
                 </div>
             </div>
 
+            <!-- Lab test results -->
+            <div id="drawer-lab-section" class="space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Lab test results</h4>
+                    <button type="button" id="drawer-lab-edit-btn" onclick="openLabTestModalFromDrawer()"
+                        class="lab-test-btn lab-test-btn--xs">
+                        <i data-lucide="flask-conical" class="w-3 h-3"></i> <span id="drawer-lab-btn-label">Add Lab Test</span>
+                    </button>
+                </div>
+                <div id="drawer-lab-empty" class="hidden bg-zinc-50 border border-dashed border-zinc-200 rounded-lg p-4 text-center">
+                    <p class="text-xs text-zinc-500">No lab test recorded for this entry yet.</p>
+                </div>
+                <div id="drawer-lab-content" class="bg-violet-50/50 border border-violet-100 rounded-lg p-4 space-y-3 hidden">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <span class="text-[9px] uppercase font-bold tracking-wider text-violet-600/80">Testing lab</span>
+                            <p class="text-sm font-semibold text-zinc-800 mt-0.5" id="drawer-lab-name">—</p>
+                        </div>
+                        <div id="drawer-lab-status"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                            <span class="text-[9px] uppercase font-bold text-zinc-400">Lab moisture</span>
+                            <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-moisture">—</p>
+                        </div>
+                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                            <span class="text-[9px] uppercase font-bold text-zinc-400">Lab F.M.</span>
+                            <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-fm">—</p>
+                        </div>
+                        <div class="bg-white border border-violet-100 rounded-lg p-2.5 text-center">
+                            <span class="text-[9px] uppercase font-bold text-zinc-400">Lab D.M.</span>
+                            <p class="text-sm font-bold text-zinc-800 mt-1" id="drawer-lab-dm">—</p>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-zinc-500">
+                        Recorded <span id="drawer-lab-recorded">—</span> by <span id="drawer-lab-by" class="font-medium text-zinc-700">—</span>
+                    </p>
+                </div>
+            </div>
+
             <!-- Weighbridge & Payout Calculator -->
             <div class="space-y-3" id="drawer-weighbridge-container">
                 <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Weighbridge Ticket & Deductions</h4>
@@ -1723,10 +1834,16 @@
         </div>
     </div>
 
+    @include('partials.lab-test-modal')
+
     <!-- Drawer Controller Script -->
     <script>
         let currentEntryId = null;
         let procurementSettings = @json($settings->toThresholdArray());
+        const labTestRouteTemplate = @json(route('entries.lab-test', ['id' => '__ENTRY_ID__']));
+        let logsEntriesById = @json($logsEntriesById->all());
+
+        @include('partials.lab-test-scripts')
 
         function getThresholds() {
             return procurementSettings;
@@ -1769,10 +1886,27 @@
                 }
             });
 
+            // Lab test button (delegated — works even if row JSON fails)
+            const logsTableBody = document.getElementById('logs-table-body');
+            if (logsTableBody) {
+                logsTableBody.addEventListener('click', function(e) {
+                    const labBtn = e.target.closest('.lab-test-row-btn');
+                    if (labBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openLabTestModalFromRow(labBtn);
+                        return;
+                    }
+                });
+            }
+
             // Row click listener
             document.querySelectorAll('.select-row').forEach(row => {
-                row.addEventListener('click', function() {
-                    const data = JSON.parse(this.dataset.json);
+                row.addEventListener('click', function(e) {
+                    if (e.target.closest('.lab-test-row-btn, [data-no-row-click]')) return;
+                    const entryId = this.dataset.entryId || this.dataset.id;
+                    const data = lookupEntryById(entryId) || parseRowEntryJson(this);
+                    if (!data) return;
                     openDrawer(data, this);
                 });
             });
@@ -1894,26 +2028,73 @@
             // Media Gallery and Audio Player
             const gallery = document.getElementById('drawer-media-gallery');
             gallery.innerHTML = '';
-            
-            let audioLog = null;
-            
-            if (entry.media_logs && entry.media_logs.length > 0) {
-                entry.media_logs.forEach(media => {
-                    if (media.type === 'audio') {
-                        audioLog = media;
-                    } else {
-                        const caption = media.caption || (media.type === 'truck' ? 'Weighbridge capture' : 'Material quality capture');
-                        const cardHtml = `
-                            <div class="flex flex-col gap-1.5 bg-zinc-50 border border-zinc-200/50 rounded-lg p-2.5">
-                                <div class="aspect-video w-full rounded-md overflow-hidden bg-zinc-100 border border-zinc-200/30">
-                                    <img src="${media.file_path}" alt="${media.type}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
-                                </div>
-                                <span class="text-[9px] text-zinc-400 font-medium">${caption}</span>
+
+            function resolveMediaUrl(path) {
+                if (!path) return '';
+                if (/^(https?:|data:|blob:)/i.test(path)) return path;
+                return path.startsWith('/') ? path : '/' + path;
+            }
+
+            function isVideoMedia(media) {
+                if (media.type === 'video') return true;
+                const path = (media.file_path || '').toLowerCase();
+                return /\.(mp4|webm|mov|m4v|ogg|ogv)(\?|$)/i.test(path);
+            }
+
+            function mediaCaption(media) {
+                if (media.caption) return media.caption;
+                if (media.type === 'truck') return 'Weighbridge capture';
+                if (media.type === 'video' || isVideoMedia(media)) return 'Video capture';
+                return 'Material quality capture';
+            }
+
+            function renderMediaCard(media) {
+                const url = resolveMediaUrl(media.file_path);
+                const caption = mediaCaption(media);
+                const safeCaption = caption.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                if (isVideoMedia(media)) {
+                    return `
+                        <div class="flex flex-col gap-1.5 bg-zinc-50 border border-zinc-200/50 rounded-lg p-2.5">
+                            <div class="aspect-video w-full rounded-md overflow-hidden bg-zinc-900 border border-zinc-200/30">
+                                <video src="${url}" controls playsinline preload="metadata" class="w-full h-full object-contain bg-black">
+                                    <a href="${url}" class="text-white text-xs underline p-2 block" target="_blank" rel="noopener">Download video</a>
+                                </video>
                             </div>
-                        `;
-                        gallery.innerHTML += cardHtml;
-                    }
-                });
+                            <span class="text-[9px] text-zinc-400 font-medium">${safeCaption}</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="flex flex-col gap-1.5 bg-zinc-50 border border-zinc-200/50 rounded-lg p-2.5">
+                        <div class="aspect-video w-full rounded-md overflow-hidden bg-zinc-100 border border-zinc-200/30">
+                            <img src="${url}" alt="${safeCaption}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                        </div>
+                        <span class="text-[9px] text-zinc-400 font-medium">${safeCaption}</span>
+                    </div>
+                `;
+            }
+
+            let audioLog = null;
+            const mediaLogs = entry.media_logs || entry.mediaLogs || [];
+            let visualCount = 0;
+
+            mediaLogs.forEach(media => {
+                if (media.type === 'audio') {
+                    audioLog = media;
+                    return;
+                }
+                gallery.innerHTML += renderMediaCard(media);
+                visualCount++;
+            });
+
+            if (visualCount === 0) {
+                gallery.innerHTML = `
+                    <div class="col-span-2 text-center py-6 text-xs text-zinc-400 bg-zinc-50 border border-dashed border-zinc-200 rounded-lg">
+                        No photos or videos attached to this entry.
+                    </div>
+                `;
             }
 
             // Audio Player configuration
@@ -1921,10 +2102,14 @@
             const audioPlayer = document.getElementById('drawer-audio-player');
             if (audioLog) {
                 audioContainer.style.display = 'block';
-                audioPlayer.src = audioLog.file_path;
+                audioPlayer.src = resolveMediaUrl(audioLog.file_path);
             } else {
                 audioContainer.style.display = 'none';
                 audioPlayer.src = '';
+            }
+
+            if (typeof refreshDrawerLabSection === 'function') {
+                refreshDrawerLabSection(entry);
             }
 
             // Show Drawer and Backdrop
@@ -2028,10 +2213,14 @@
                         statusCell.innerHTML = statusPillHtml(status);
 
                         // Update local dataset JSON
-                        const datasetJson = JSON.parse(row.dataset.json);
-                        datasetJson.status = status;
-                        datasetJson.remarks = remarks; // Update remarks locally
-                        row.dataset.json = JSON.stringify(datasetJson);
+                        const datasetJson = typeof parseRowEntryJson === 'function'
+                            ? parseRowEntryJson(row)
+                            : JSON.parse(row.dataset.json);
+                        if (datasetJson) {
+                            datasetJson.status = status;
+                            datasetJson.remarks = remarks;
+                            row.dataset.json = JSON.stringify(datasetJson);
+                        }
                     }
 
                     // Request update for stats counters
@@ -2438,5 +2627,6 @@
             });
         }
     </script>
+
 </body>
 </html>
