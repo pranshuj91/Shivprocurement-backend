@@ -28,8 +28,8 @@ class UnloadingApiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'  => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone',
-            'pin'   => 'required|string|size:4',
+            'phone' => 'required|string|digits:10|unique:users,phone',
+            'pin'   => 'required|string|digits:4',
         ]);
 
         if ($validator->fails()) {
@@ -62,8 +62,8 @@ class UnloadingApiController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'phone' => 'required|string',
-            'pin'   => 'required|string|size:4',
+            'phone' => 'required|string|digits:10',
+            'pin'   => 'required|string|digits:4',
         ]);
 
         if ($validator->fails()) {

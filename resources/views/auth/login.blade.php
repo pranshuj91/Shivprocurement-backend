@@ -22,6 +22,17 @@
             background-color: #fafafa;
             background-image: radial-gradient(circle at top right, #f0fdf4 0%, #fafafa 100%);
         }
+
+        /* 2px font size increase overrides */
+        .text-\[9px\] { font-size: 11px !important; }
+        .text-\[10px\] { font-size: 12px !important; }
+        .text-\[11px\] { font-size: 13px !important; }
+        .text-xs { font-size: 14px !important; }
+        .text-sm { font-size: 16px !important; }
+        .text-base { font-size: 18px !important; }
+        .text-lg { font-size: 20px !important; }
+        .text-xl { font-size: 22px !important; }
+        .text-2xl { font-size: 26px !important; }
     </style>
 </head>
 <body class="text-zinc-800 min-h-screen flex items-center justify-center p-4">
@@ -82,7 +93,10 @@
                     </span>
                     <input type="password" name="password" id="password" required
                         placeholder="••••••••" 
-                        class="w-full pl-9 pr-4 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 placeholder-zinc-400 focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                        class="w-full pl-9 pr-10 py-2.5 text-xs bg-zinc-50 border border-zinc-200 rounded-lg text-zinc-800 placeholder-zinc-400 focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                    <button type="button" onclick="togglePasswordVisibility('password', 'password-toggle-icon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-400 hover:text-zinc-650 cursor-pointer">
+                        <i id="password-toggle-icon" data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </div>
 
@@ -108,11 +122,24 @@
         </div>
     </div>
 
-    <!-- Initialize Lucide Icons -->
+    <!-- Initialize Lucide Icons & Handlers -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             lucide.createIcons();
         });
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleIcon = document.getElementById(iconId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

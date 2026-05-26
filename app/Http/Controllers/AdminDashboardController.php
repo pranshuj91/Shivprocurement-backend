@@ -11,6 +11,45 @@ class AdminDashboardController extends Controller
     public function index(Request $request)
     {
         // 1. Calculate stats (independent of listing filters)
+        $entriesLast7Days = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->get();
+
+        $totalCounts = [];
+        $pendingCounts = [];
+        $outCounts = [];
+        $approvedCounts = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $dayStart = now()->subDays($i)->startOfDay();
+            $dayEnd = now()->subDays($i)->endOfDay();
+            
+            $dayEntries = $entriesLast7Days->filter(function ($e) use ($dayStart, $dayEnd) {
+                return $e->created_at >= $dayStart && $e->created_at <= $dayEnd;
+            });
+            
+            $totalCounts[] = $dayEntries->count();
+            $pendingCounts[] = $dayEntries->where('status', 'pending')->count();
+            $outCounts[] = $dayEntries->filter(function ($e) {
+                return $e->moisture > 10.0 || $e->fm > 2.0 || $e->dm > 2.0;
+            })->count();
+            $approvedCounts[] = $dayEntries->where('status', 'approved')->count();
+        }
+
+        $totalCurrent = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $totalPrevious = UnloadingEntry::whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $pendingCurrent = UnloadingEntry::where('status', 'pending')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $pendingPrevious = UnloadingEntry::where('status', 'pending')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $outCurrent = UnloadingEntry::where(function ($q) {
+            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
+        })->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $outPrevious = UnloadingEntry::where(function ($q) {
+            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
+        })->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $approvedCurrent = UnloadingEntry::where('status', 'approved')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $approvedPrevious = UnloadingEntry::where('status', 'approved')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
         $stats = [
             'total' => UnloadingEntry::count(),
             'pending' => UnloadingEntry::where('status', 'pending')->count(),
@@ -21,6 +60,14 @@ class AdminDashboardController extends Controller
                       ->orWhere('fm', '>', 2.0)
                       ->orWhere('dm', '>', 2.0);
             })->count(),
+            'total_trend' => $this->calculateTrendPercentage($totalCurrent, $totalPrevious),
+            'pending_trend' => $this->calculateTrendPercentage($pendingCurrent, $pendingPrevious),
+            'out_of_spec_trend' => $this->calculateTrendPercentage($outCurrent, $outPrevious),
+            'approved_trend' => $this->calculateTrendPercentage($approvedCurrent, $approvedPrevious),
+            'total_sparkline' => $this->generateSparklinePath($totalCounts),
+            'pending_sparkline' => $this->generateSparklinePath($pendingCounts),
+            'out_of_spec_sparkline' => $this->generateSparklinePath($outCounts),
+            'approved_sparkline' => $this->generateSparklinePath($approvedCounts),
         ];
 
         // 2. Build entries query with filters
@@ -87,6 +134,71 @@ class AdminDashboardController extends Controller
         return view('admin.dashboard', compact('entries', 'stats', 'units', 'moistureTrend', 'mandiLeaderboard', 'supervisors'));
     }
 
+    public function getStatsJson()
+    {
+        $entriesLast7Days = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->get();
+
+        $totalCounts = [];
+        $pendingCounts = [];
+        $outCounts = [];
+        $approvedCounts = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $dayStart = now()->subDays($i)->startOfDay();
+            $dayEnd = now()->subDays($i)->endOfDay();
+            
+            $dayEntries = $entriesLast7Days->filter(function ($e) use ($dayStart, $dayEnd) {
+                return $e->created_at >= $dayStart && $e->created_at <= $dayEnd;
+            });
+            
+            $totalCounts[] = $dayEntries->count();
+            $pendingCounts[] = $dayEntries->where('status', 'pending')->count();
+            $outCounts[] = $dayEntries->filter(function ($e) {
+                return $e->moisture > 10.0 || $e->fm > 2.0 || $e->dm > 2.0;
+            })->count();
+            $approvedCounts[] = $dayEntries->where('status', 'approved')->count();
+        }
+
+        $totalCurrent = UnloadingEntry::where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $totalPrevious = UnloadingEntry::whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $pendingCurrent = UnloadingEntry::where('status', 'pending')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $pendingPrevious = UnloadingEntry::where('status', 'pending')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $outCurrent = UnloadingEntry::where(function ($q) {
+            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
+        })->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $outPrevious = UnloadingEntry::where(function ($q) {
+            $q->where('moisture', '>', 10.0)->orWhere('fm', '>', 2.0)->orWhere('dm', '>', 2.0);
+        })->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        $approvedCurrent = UnloadingEntry::where('status', 'approved')->where('created_at', '>=', now()->subDays(7)->startOfDay())->count();
+        $approvedPrevious = UnloadingEntry::where('status', 'approved')->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->subDays(7)->startOfDay()])->count();
+
+        return response()->json([
+            'success' => true,
+            'stats' => [
+                'total' => UnloadingEntry::count(),
+                'pending' => UnloadingEntry::where('status', 'pending')->count(),
+                'approved' => UnloadingEntry::where('status', 'approved')->count(),
+                'flagged' => UnloadingEntry::where('status', 'flagged')->count(),
+                'out_of_spec' => UnloadingEntry::where(function ($query) {
+                    $query->where('moisture', '>', 10.0)
+                          ->orWhere('fm', '>', 2.0)
+                          ->orWhere('dm', '>', 2.0);
+                })->count(),
+                'total_trend' => $this->calculateTrendPercentage($totalCurrent, $totalPrevious),
+                'pending_trend' => $this->calculateTrendPercentage($pendingCurrent, $pendingPrevious),
+                'out_of_spec_trend' => $this->calculateTrendPercentage($outCurrent, $outPrevious),
+                'approved_trend' => $this->calculateTrendPercentage($approvedCurrent, $approvedPrevious),
+                'total_sparkline' => $this->generateSparklinePath($totalCounts),
+                'pending_sparkline' => $this->generateSparklinePath($pendingCounts),
+                'out_of_spec_sparkline' => $this->generateSparklinePath($outCounts),
+                'approved_sparkline' => $this->generateSparklinePath($approvedCounts),
+            ]
+        ]);
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
@@ -107,5 +219,79 @@ class AdminDashboardController extends Controller
             'status' => $entry->status,
             'remarks' => $entry->remarks,
         ]);
+    }
+
+    public function storeUnit(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:units,code',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $unit = Unit::create([
+            'name' => $request->input('name'),
+            'code' => $request->input('code'),
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Procurement center added successfully.',
+            'unit' => $unit
+        ]);
+    }
+
+    public function storeSupervisor(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|digits:10|unique:users,phone',
+            'pin' => 'required|string|digits:4',
+        ]);
+
+        $supervisor = \App\Models\User::create([
+            'name' => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'pin' => \Illuminate\Support\Facades\Hash::make($request->input('pin')),
+            'role' => 'supervisor',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Supervisor added successfully.',
+            'supervisor' => $supervisor
+        ]);
+    }
+
+    private function calculateTrendPercentage($current, $previous): string
+    {
+        if ($previous == 0) {
+            return $current > 0 ? '+100%' : '0%';
+        }
+        $diff = (($current - $previous) / $previous) * 100;
+        $sign = $diff >= 0 ? '+' : '';
+        return $sign . round($diff) . '%';
+    }
+
+    private function generateSparklinePath(array $counts): string
+    {
+        $min = min($counts);
+        $max = max($counts);
+        $range = $max - $min;
+        
+        $points = [];
+        foreach ($counts as $i => $c) {
+            $x = $i * (120 / 6); // width 120
+            if ($range == 0) {
+                $y = 15; // middle
+            } else {
+                $y = 30 - (($c - $min) / $range) * 20 - 5; // height 30, with 5px padding
+            }
+            $points[] = "$x,$y";
+        }
+        return "M " . implode(" L ", $points);
     }
 }

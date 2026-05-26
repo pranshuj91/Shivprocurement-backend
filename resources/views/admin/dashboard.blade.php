@@ -23,6 +23,45 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+        /* 1px font size increase overrides to prevent line wrapping */
+        .text-\[9px\] { font-size: 10px !important; }
+        .text-\[10px\] { font-size: 11px !important; }
+        .text-\[11px\] { font-size: 12px !important; }
+        .text-xs { font-size: 13px !important; }
+        .text-sm { font-size: 15px !important; }
+        .text-base { font-size: 17px !important; }
+        .text-lg { font-size: 19px !important; }
+        .text-xl { font-size: 21px !important; }
+        .text-2xl { font-size: 25px !important; }
+
+        /* Premium hover states & smooth card transitions */
+        .stats-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.1);
+            border-color: #d4d4d8;
+        }
+
+        .premium-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .premium-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 24px -12px rgba(0, 0, 0, 0.12);
+            border-color: #d4d4d8;
+        }
+
+        /* Premium select row highlight */
+        .select-row {
+            transition: all 0.15s ease;
+        }
+        .select-row.selected {
+            background-color: #f4f4f5 !important;
+            border-left: 3px solid #0d2818 !important;
+        }
+
         /* Custom scrollbar for premium aesthetic */
         ::-webkit-scrollbar {
             width: 6px;
@@ -40,92 +79,102 @@
         }
     </style>
 </head>
-<body class="bg-zinc-50/50 text-zinc-900 h-screen w-screen overflow-hidden flex">
+<body class="bg-[#f5f8f5] text-zinc-900 h-screen w-screen overflow-hidden flex">
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-white border-r border-zinc-200 flex flex-col shrink-0">
+    <aside class="w-64 bg-gradient-to-b from-[#f4f7f4] via-[#eff2ef] to-[#ebefeb] border-r border-[#dee4de] flex flex-col shrink-0">
         <!-- Logo Header -->
-        <div class="h-20 border-b border-zinc-200 px-6 flex items-center">
-            <div class="flex items-center gap-2.5">
-                <span class="w-2.5 h-6 bg-[#0d2818] rounded-full"></span>
+        <div class="h-16 px-6 flex items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0d2818] to-[#1b4d3e] flex items-center justify-center text-white shadow-sm shadow-[#0d2818]/20">
+                    <i data-lucide="sprout" class="w-5 h-5 text-emerald-200"></i>
+                </div>
                 <div>
-                    <h1 class="text-xs font-bold uppercase tracking-widest text-[#0d2818] leading-none">SHIV EDIBLES</h1>
-                    <span class="text-[10px] text-zinc-400 font-medium">Procurement Portal</span>
+                    <h1 class="text-[11px] font-extrabold uppercase tracking-wider text-[#0d2818] leading-tight">SHIV EDIBLES</h1>
+                    <span class="text-[9px] text-[#2e5a44] font-semibold tracking-wide uppercase opacity-75">Procurement Portal</span>
                 </div>
             </div>
         </div>
         <!-- Navigation Links -->
         <nav class="flex-1 px-4 py-6 space-y-1.5">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-emerald-50/60 text-[#0d2818] border border-emerald-100/50 transition cursor-pointer text-left">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#0d2818]"></i>
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#0d2818] to-[#143d24] text-white border border-[#0d2818] transition duration-200 cursor-pointer text-left shadow-md shadow-[#0d2818]/15 translate-x-0.5">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 text-emerald-200"></i>
                 Dashboard
             </button>
             
-            <button onclick="switchTab('units')" id="nav-units" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition border border-transparent cursor-pointer text-left">
+            <button onclick="switchTab('units')" id="nav-units" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
                 <i data-lucide="git-branch" class="w-4 h-4 text-zinc-400"></i>
                 Procurement Centers
             </button>
 
-            <button onclick="switchTab('supervisors')" id="nav-supervisors" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition border border-transparent cursor-pointer text-left">
+            <button onclick="switchTab('supervisors')" id="nav-supervisors" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
                 <i data-lucide="users" class="w-4 h-4 text-zinc-400"></i>
                 Supervisors List
             </button>
 
-            <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition border border-transparent cursor-pointer text-left">
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
                 <i data-lucide="bar-chart-3" class="w-4 h-4 text-zinc-400"></i>
                 Analytics & Reports
             </button>
 
-            <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition border border-transparent cursor-pointer text-left">
+            <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
                 <i data-lucide="settings" class="w-4 h-4 text-zinc-400"></i>
                 Settings
             </button>
         </nav>
 
         <!-- Sidebar footer branding/version -->
-        <div class="p-6 border-t border-zinc-100 text-center">
-            <span class="text-[10px] text-zinc-400 font-medium">Shiv Procurement v1.1</span>
+        <div class="p-6 border-t border-[#dee4de] flex flex-col gap-1 text-center bg-[#ebefeb]/40">
+            <span class="text-[10px] text-[#2e5a44] font-bold tracking-wider uppercase">Shiv Procurement</span>
+            <span class="text-[9px] text-zinc-400 font-medium">v1.1 • Enterprise Admin</span>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col overflow-hidden bg-[#f5f8f5]">
         @php
             $hour = date('H');
             $greeting = $hour < 12 ? 'Morning' : ($hour < 17 ? 'Afternoon' : 'Evening');
         @endphp
         
         <!-- Header / Stats Summary -->
-        <header class="h-20 bg-white border-b border-zinc-200 px-8 flex items-center justify-between shrink-0">
+        <header class="h-16 bg-[#f5f8f5] border-b border-[#dee4de] px-8 flex items-center justify-between shrink-0">
             <div>
                 <h2 class="text-sm font-bold tracking-tight text-zinc-900 font-sans">Good {{ $greeting }}, {{ auth()->user()->name ?? 'Manager' }}</h2>
                 <p class="text-[11px] text-zinc-500 mt-0.5 font-medium">Here's what's happening at Shiv Edibles today.</p>
             </div>
             <div class="flex items-center gap-4">
-                <!-- Mini Stats Widget -->
-                <div class="hidden xl:flex items-center gap-6 text-xs text-zinc-400 pr-4 border-r border-zinc-150">
-                    <div>
-                        <span class="font-semibold text-zinc-700" id="stat-total-badge">{{ $stats['total'] }}</span> logs
+                <!-- Mini Stats Widget (Pill Layout) -->
+                <div class="hidden xl:flex items-center gap-5 text-[11px] text-zinc-500 bg-white/70 border border-zinc-200 px-4 py-1.5 rounded-full shadow-xs mr-2">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+                        <span class="font-bold text-zinc-800" id="stat-total-badge">{{ $stats['total'] }}</span>
+                        <span class="text-zinc-500 font-medium">logs</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span class="font-semibold text-zinc-700" id="stat-pending-badge">{{ $stats['pending'] }}</span> pending
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span class="font-bold text-zinc-800" id="stat-pending-badge">{{ $stats['pending'] }}</span>
+                        <span class="text-zinc-500 font-medium">pending</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        <span class="font-semibold text-zinc-700" id="stat-approved-badge">{{ $stats['approved'] }}</span> approved
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span class="font-bold text-zinc-800" id="stat-approved-badge">{{ $stats['approved'] }}</span>
+                        <span class="text-zinc-500 font-medium">approved</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                        <span class="font-semibold text-zinc-700" id="stat-flagged-badge">{{ $stats['flagged'] }}</span> flagged
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span class="font-bold text-zinc-800" id="stat-flagged-badge">{{ $stats['flagged'] }}</span>
+                        <span class="text-zinc-500 font-medium">flagged</span>
                     </div>
                 </div>
+                <!-- Vertical Separator -->
+                <div class="hidden xl:block h-6 w-px bg-zinc-300 mr-2"></div>
 
                 <!-- Date display -->
-                <div class="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 bg-zinc-50 border border-zinc-200/60 px-3 py-1.5 rounded-lg">
+                <div class="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 bg-white/70 border border-zinc-200 px-3 py-1.5 rounded-lg">
                     <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-400"></i>
                     <span>Today: <span class="font-semibold text-zinc-700">{{ now()->format('d M, Y') }}</span></span>
                 </div>
@@ -150,214 +199,218 @@
                 </div>
 
                 <!-- Time & Refresh -->
-                <button onclick="window.location.reload()" class="p-2 hover:bg-zinc-50 rounded-full text-zinc-400 hover:text-zinc-600 transition cursor-pointer">
+                <button onclick="window.location.reload()" class="p-2 hover:bg-zinc-100/70 rounded-full text-zinc-400 hover:text-zinc-600 transition cursor-pointer">
                     <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Scrollable Workspace Container -->
-        <div class="flex-1 overflow-y-auto flex flex-col bg-zinc-50/50">
-            
-            <!-- Tab 1: Dashboard Feed -->
+            <!-- Scrollable Workspace Container -->
+            <div class="flex-1 overflow-y-auto flex flex-col bg-[#f5f8f5]">
+                     <!-- Tab 1: Dashboard Feed -->
             <div id="view-dashboard" class="flex flex-col">
                 <!-- Stats Grid Block -->
-                <section class="p-8 pb-0 grid grid-cols-1 md:grid-cols-4 gap-4 shrink-0">
-                    <!-- Stat 1: Total Logs -->
-                    <div class="bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
-                        <div class="relative z-10 text-left">
-                            <span class="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Total Entries</span>
-                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight mt-1" id="stat-total">{{ $stats['total'] }}</h3>
-                        </div>
-                        <div class="p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-zinc-500 relative z-10">
-                            <i data-lucide="file-text" class="w-5 h-5"></i>
-                        </div>
-                        <!-- Sophisticated Dotted Grid Pattern -->
-                        <div class="absolute inset-0 pointer-events-none opacity-[0.25]">
-                            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <pattern id="dotGridTotal" width="10" height="10" patternUnits="userSpaceOnUse">
-                                        <circle cx="1.5" cy="1.5" r="0.75" fill="#71717a" />
-                                    </pattern>
-                                    <linearGradient id="fadeTotal" x1="0" y1="1" x2="0.8" y2="0.2">
-                                        <stop offset="0%" stop-color="white" stop-opacity="1" />
-                                        <stop offset="50%" stop-color="white" stop-opacity="0.3" />
-                                        <stop offset="100%" stop-color="white" stop-opacity="0" />
-                                    </linearGradient>
-                                    <mask id="maskTotal">
-                                        <rect width="100%" height="100%" fill="url(#fadeTotal)" />
-                                    </mask>
-                                </defs>
-                                <rect width="100%" height="100%" fill="url(#dotGridTotal)" mask="url(#maskTotal)" />
-                            </svg>
-                        </div>
-                    </div>
-                    <!-- Stat 2: Pending Approval -->
-                    <div class="bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
-                        <div class="relative z-10 text-left">
-                            <span class="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Pending Verify</span>
-                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight mt-1 text-blue-600" id="stat-pending">{{ $stats['pending'] }}</h3>
-                        </div>
-                        <div class="p-3 bg-blue-50 border border-blue-100/55 rounded-lg text-blue-600 relative z-10">
-                            <i data-lucide="clock" class="w-5 h-5"></i>
-                        </div>
-                        <!-- Sophisticated Dotted Grid Pattern -->
-                        <div class="absolute inset-0 pointer-events-none opacity-[0.25]">
-                            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <pattern id="dotGridPending" width="10" height="10" patternUnits="userSpaceOnUse">
-                                        <circle cx="1.5" cy="1.5" r="0.75" fill="#3b82f6" />
-                                    </pattern>
-                                    <linearGradient id="fadePending" x1="0" y1="1" x2="0.8" y2="0.2">
-                                        <stop offset="0%" stop-color="white" stop-opacity="1" />
-                                        <stop offset="50%" stop-color="white" stop-opacity="0.3" />
-                                        <stop offset="100%" stop-color="white" stop-opacity="0" />
-                                    </linearGradient>
-                                    <mask id="maskPending">
-                                        <rect width="100%" height="100%" fill="url(#fadePending)" />
-                                    </mask>
-                                </defs>
-                                <rect width="100%" height="100%" fill="url(#dotGridPending)" mask="url(#maskPending)" />
-                            </svg>
-                        </div>
-                    </div>
-                    <!-- Stat 3: Quality Outliers -->
-                    <div class="bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
-                        <div class="relative z-10 text-left">
-                            <span class="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Quality Outliers</span>
-                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight mt-1 text-amber-600" id="stat-out-of-spec">{{ $stats['out_of_spec'] }}</h3>
-                        </div>
-                        <div class="p-3 bg-amber-50 border border-amber-100/55 rounded-lg text-amber-600 relative z-10">
-                            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                        </div>
-                        <!-- Sophisticated Dotted Grid Pattern -->
-                        <div class="absolute inset-0 pointer-events-none opacity-[0.25]">
-                            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <pattern id="dotGridOutliers" width="10" height="10" patternUnits="userSpaceOnUse">
-                                        <circle cx="1.5" cy="1.5" r="0.75" fill="#f59e0b" />
-                                    </pattern>
-                                    <linearGradient id="fadeOutliers" x1="0" y1="1" x2="0.8" y2="0.2">
-                                        <stop offset="0%" stop-color="white" stop-opacity="1" />
-                                        <stop offset="50%" stop-color="white" stop-opacity="0.3" />
-                                        <stop offset="100%" stop-color="white" stop-opacity="0" />
-                                    </linearGradient>
-                                    <mask id="maskOutliers">
-                                        <rect width="100%" height="100%" fill="url(#fadeOutliers)" />
-                                    </mask>
-                                </defs>
-                                <rect width="100%" height="100%" fill="url(#dotGridOutliers)" mask="url(#maskOutliers)" />
-                            </svg>
-                        </div>
-                    </div>
-                    <!-- Stat 4: Approved Logs -->
-                    <div class="bg-white border border-zinc-200/80 rounded-xl p-5 flex items-center justify-between shadow-sm relative overflow-hidden">
-                        <div class="relative z-10 text-left">
-                            <span class="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Approved Logs</span>
-                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight mt-1 text-emerald-600" id="stat-approved">{{ $stats['approved'] }}</h3>
-                        </div>
-                        <div class="p-3 bg-emerald-50 border border-emerald-100/55 rounded-lg text-emerald-600 relative z-10">
-                            <i data-lucide="check-circle" class="w-5 h-5"></i>
-                        </div>
-                        <!-- Sophisticated Dotted Grid Pattern -->
-                        <div class="absolute inset-0 pointer-events-none opacity-[0.25]">
-                            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                                <defs>
-                                    <pattern id="dotGridApproved" width="10" height="10" patternUnits="userSpaceOnUse">
-                                        <circle cx="1.5" cy="1.5" r="0.75" fill="#10b981" />
-                                    </pattern>
-                                    <linearGradient id="fadeApproved" x1="0" y1="1" x2="0.8" y2="0.2">
-                                        <stop offset="0%" stop-color="white" stop-opacity="1" />
-                                        <stop offset="50%" stop-color="white" stop-opacity="0.3" />
-                                        <stop offset="100%" stop-color="white" stop-opacity="0" />
-                                    </linearGradient>
-                                    <mask id="maskApproved">
-                                        <rect width="100%" height="100%" fill="url(#fadeApproved)" />
-                                    </mask>
-                                </defs>
-                                <rect width="100%" height="100%" fill="url(#dotGridApproved)" mask="url(#maskApproved)" />
-                            </svg>
-                        </div>
-                    </div>
-                </section>
+                @php
+                    // Card 1: Total Logs
+                    $totalTrendVal = $stats['total_trend'];
+                    $isTotalNegative = str_starts_with($totalTrendVal, '-');
+                    $totalBadgeColor = $isTotalNegative ? 'rose' : 'emerald';
+                    $totalTrendIcon = $isTotalNegative ? 'trending-down' : 'trending-up';
 
-                <!-- Horizontal Filter Bar (In-page) -->
-                <section class="px-8 pt-6 pb-0 shrink-0">
-                    <form action="{{ route('admin.dashboard') }}" method="GET" class="bg-white border border-zinc-200/80 rounded-xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <!-- Left: Search and Dropdowns -->
-                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                            <!-- Search -->
-                            <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-                                    <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                    // Card 2: Pending Verification
+                    $pendingTrendVal = $stats['pending_trend'];
+                    $isPendingNegative = str_starts_with($pendingTrendVal, '-');
+                    $pendingBadgeColor = $isPendingNegative ? 'emerald' : 'rose';
+                    $pendingTrendIcon = $isPendingNegative ? 'trending-down' : 'trending-up';
+
+                    // Card 3: Quality Outliers
+                    $outTrendVal = $stats['out_of_spec_trend'];
+                    $isOutNegative = str_starts_with($outTrendVal, '-');
+                    $outBadgeColor = $isOutNegative ? 'emerald' : 'rose';
+                    $outTrendIcon = $isOutNegative ? 'trending-down' : 'trending-up';
+
+                    // Card 4: Approved Entries
+                    $approvedTrendVal = $stats['approved_trend'];
+                    $isApprovedNegative = str_starts_with($approvedTrendVal, '-');
+                    $approvedBadgeColor = $isApprovedNegative ? 'rose' : 'emerald';
+                    $approvedTrendIcon = $isApprovedNegative ? 'trending-down' : 'trending-up';
+                @endphp
+                <section class="p-8 pb-0 shrink-0 grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <!-- Card 1: Total Logs -->
+                    <div class="premium-card bg-white border border-[#dee4de] rounded-2xl p-5 flex flex-col justify-between shadow-xs transition duration-200 min-h-[110px] relative overflow-hidden text-left">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg text-zinc-500">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Total Logs</span>
+                        </div>
+                        <div class="flex items-end justify-between mt-4">
+                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight" id="stat-total">{{ number_format($stats['total']) }}</h3>
+                            <div class="flex items-center gap-3">
+                                <!-- Sparkline SVG -->
+                                <svg id="svg-total-sparkline" class="w-16 h-8 text-{{ $totalBadgeColor }}-500" viewBox="0 0 120 30" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path id="path-total-sparkline" d="{{ $stats['total_sparkline'] }}"></path>
+                                </svg>
+                                <!-- Trend Badge -->
+                                <span id="badge-total-trend" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-{{ $totalBadgeColor }}-550 text-{{ $totalBadgeColor }}-700 border border-{{ $totalBadgeColor }}-100">
+                                    <i data-lucide="{{ $totalTrendIcon }}" class="w-2.5 h-2.5"></i>
+                                    {{ $stats['total_trend'] }}
                                 </span>
-                                <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                    placeholder="Search Truck ID, Supplier..." 
-                                    class="w-full pl-9 pr-4 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
-                            </div>
-
-                            <!-- Procurement Center -->
-                            <div>
-                                <select name="unit_id" id="unit_id" 
-                                    class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
-                                    <option value="">All Units</option>
-                                    @foreach($units as $unit)
-                                        <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
-                                            {{ $unit->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Status Filter -->
-                            <div>
-                                <select name="status" id="status" 
-                                    class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
-                                    <option value="">All Quality Statuses</option>
-                                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Verify</option>
-                                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved (In-Spec)</option>
-                                    <option value="flagged" {{ request('status') === 'flagged' ? 'selected' : '' }}>Flagged (Out-of-Spec)</option>
-                                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                    <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Quality Outliers</option>
-                                </select>
-                            </div>
-
-                            <!-- Time Window -->
-                            <div>
-                                <select name="date_filter" id="date_filter" 
-                                    class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
-                                    <option value="">All Time</option>
-                                    <option value="today" {{ request('date_filter') === 'today' ? 'selected' : '' }}>Today</option>
-                                    <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>Last 7 Days</option>
-                                    <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>Last 30 Days</option>
-                                </select>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Right: Action Buttons -->
-                        <div class="flex items-center gap-2 shrink-0 self-end lg:self-auto">
-                            <button type="submit" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
-                                <i data-lucide="filter" class="w-3.5 h-3.5"></i> Apply Filters
-                            </button>
-                            @if(request()->anyFilled(['search', 'unit_id', 'status', 'date_filter']))
-                                <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium rounded-lg transition duration-150 flex items-center justify-center cursor-pointer">
-                                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                                </a>
-                            @endif
+                    <!-- Card 2: Pending Verification -->
+                    <div class="premium-card bg-white border border-[#dee4de] rounded-2xl p-5 flex flex-col justify-between shadow-xs transition duration-200 min-h-[110px] relative overflow-hidden text-left">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg text-zinc-500">
+                                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Pending Verification</span>
                         </div>
-                    </form>
+                        <div class="flex items-end justify-between mt-4">
+                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight" id="stat-pending">{{ number_format($stats['pending']) }}</h3>
+                            <div class="flex items-center gap-3">
+                                <!-- Sparkline SVG -->
+                                <svg id="svg-pending-sparkline" class="w-16 h-8 text-{{ $pendingBadgeColor }}-500" viewBox="0 0 120 30" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path id="path-pending-sparkline" d="{{ $stats['pending_sparkline'] }}"></path>
+                                </svg>
+                                <!-- Trend Badge -->
+                                <span id="badge-pending-trend" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-{{ $pendingBadgeColor }}-50 text-{{ $pendingBadgeColor }}-700 border border-{{ $pendingBadgeColor }}-100">
+                                    <i data-lucide="{{ $pendingTrendIcon }}" class="w-2.5 h-2.5"></i>
+                                    {{ $stats['pending_trend'] }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Quality Outliers -->
+                    <div class="premium-card bg-white border border-[#dee4de] rounded-2xl p-5 flex flex-col justify-between shadow-xs transition duration-200 min-h-[110px] relative overflow-hidden text-left">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg text-zinc-500">
+                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Quality Outliers</span>
+                        </div>
+                        <div class="flex items-end justify-between mt-4">
+                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight" id="stat-out-of-spec">{{ number_format($stats['out_of_spec']) }}</h3>
+                            <div class="flex items-center gap-3">
+                                <!-- Sparkline SVG -->
+                                <svg id="svg-out-of-spec-sparkline" class="w-16 h-8 text-{{ $outBadgeColor }}-500" viewBox="0 0 120 30" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path id="path-out-of-spec-sparkline" d="{{ $stats['out_of_spec_sparkline'] }}"></path>
+                                </svg>
+                                <!-- Trend Badge -->
+                                <span id="badge-out-of-spec-trend" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-{{ $outBadgeColor }}-50 text-{{ $outBadgeColor }}-700 border border-{{ $outBadgeColor }}-100">
+                                    <i data-lucide="{{ $outTrendIcon }}" class="w-2.5 h-2.5"></i>
+                                    {{ $stats['out_of_spec_trend'] }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Approved Entries -->
+                    <div class="premium-card bg-white border border-[#dee4de] rounded-2xl p-5 flex flex-col justify-between shadow-xs transition duration-200 min-h-[110px] relative overflow-hidden text-left">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-zinc-50 border border-zinc-100 rounded-lg text-zinc-500">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Approved Entries</span>
+                        </div>
+                        <div class="flex items-end justify-between mt-4">
+                            <h3 class="text-2xl font-bold text-zinc-800 tracking-tight" id="stat-approved">{{ number_format($stats['approved']) }}</h3>
+                            <div class="flex items-center gap-3">
+                                <!-- Sparkline SVG -->
+                                <svg id="svg-approved-sparkline" class="w-16 h-8 text-{{ $approvedBadgeColor }}-500" viewBox="0 0 120 30" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path id="path-approved-sparkline" d="{{ $stats['approved_sparkline'] }}"></path>
+                                </svg>
+                                <!-- Trend Badge -->
+                                <span id="badge-approved-trend" class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-{{ $approvedBadgeColor }}-50 text-{{ $approvedBadgeColor }}-700 border border-{{ $approvedBadgeColor }}-100">
+                                    <i data-lucide="{{ $approvedTrendIcon }}" class="w-2.5 h-2.5"></i>
+                                    {{ $stats['approved_trend'] }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
-                <!-- Table & Leaderboard Layout -->
-                <section class="flex-1 p-8 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
-                    <!-- Left: Log Table (Col Span 3) -->
-                    <div class="lg:col-span-3 flex flex-col h-full min-h-0">
-                        <div class="bg-white border border-zinc-200/80 rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
+                <!-- Search & Filters (Standalone Row) -->
+                <section class="p-8 pb-0 shrink-0">
+                    <div class="bg-white border border-[#dee4de] rounded-xl p-4 shadow-sm">
+                        <form action="{{ route('admin.dashboard') }}" method="GET" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <!-- Left: Search and Dropdowns -->
+                            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                <!-- Search -->
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                        <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                                    </span>
+                                    <input type="text" name="search" id="search" value="{{ request('search') }}" 
+                                        placeholder="Search Truck ID, Supplier..." 
+                                        class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
+                                </div>
+
+                                <!-- Procurement Center -->
+                                <div>
+                                    <select name="unit_id" id="unit_id" 
+                                        class="w-full px-3 py-2 text-xs bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
+                                        <option value="">All Units</option>
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
+                                                {{ $unit->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Status Filter -->
+                                <div>
+                                    <select name="status" id="status" 
+                                        class="w-full px-3 py-2 text-xs bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
+                                        <option value="">All Quality Statuses</option>
+                                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Verify</option>
+                                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved (In-Spec)</option>
+                                        <option value="flagged" {{ request('status') === 'flagged' ? 'selected' : '' }}>Flagged (Out-of-Spec)</option>
+                                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                        <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Quality Outliers</option>
+                                    </select>
+                                </div>
+
+                                <!-- Time Window -->
+                                <div>
+                                    <select name="date_filter" id="date_filter" 
+                                        class="w-full px-3 py-2 text-xs bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
+                                        <option value="">All Time</option>
+                                        <option value="today" {{ request('date_filter') === 'today' ? 'selected' : '' }}>Today</option>
+                                        <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>Last 7 Days</option>
+                                        <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>Last 30 Days</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Right: Action Buttons -->
+                            <div class="flex items-center gap-2 shrink-0 self-end lg:self-auto">
+                                <button type="submit" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
+                                    <i data-lucide="filter" class="w-3.5 h-3.5"></i> Apply Filters
+                                </button>
+                                @if(request()->anyFilled(['search', 'unit_id', 'status', 'date_filter']))
+                                    <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium rounded-lg transition duration-150 flex items-center justify-center cursor-pointer">
+                                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Table Layout (Full Width, No Leaderboard) -->
+                <section class="flex-1 p-8 pt-6 flex flex-col min-h-0">
+                    <div class="flex-1 flex flex-col h-full min-h-0">
+                        <div class="bg-white border border-[#dee4de] rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
                             <!-- Table Wrapper with overflow-y-auto -->
                             <div class="flex-1 overflow-y-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
-                                        <tr class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-bold uppercase tracking-wider text-zinc-400 sticky top-0 z-10">
+                                        <tr class="bg-zinc-50 border-b border-zinc-200 text-[10px] font-bold uppercase tracking-wider text-zinc-400 sticky top-0 z-10 whitespace-nowrap">
                                             <th class="py-3 px-6">Entry ID</th>
                                             <th class="py-3 px-6">Vehicle Plate</th>
                                             <th class="py-3 px-6">Procurement Center</th>
@@ -375,50 +428,50 @@
                                                 data-id="{{ $entry->id }}"
                                                 data-json="{{ json_encode($entry) }}">
                                                 <!-- ID -->
-                                                <td class="py-3.5 px-6 font-semibold text-[#0d2818]">
+                                                <td class="py-3.5 px-6 font-semibold text-[#0d2818] whitespace-nowrap">
                                                     {{ $entry->id }}
                                                 </td>
                                                 <!-- Plate -->
-                                                <td class="py-3.5 px-6">
+                                                <td class="py-3.5 px-6 whitespace-nowrap">
                                                     <div class="flex items-center gap-1.5">
-                                                        <i data-lucide="truck" class="w-3.5 h-3.5 text-zinc-400"></i>
-                                                        <span class="font-mono tracking-tight font-medium bg-zinc-100 px-2 py-0.5 rounded text-zinc-700 text-[11px] border border-zinc-200/50">{{ $entry->truck_no }}</span>
+                                                        <i data-lucide="truck" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
+                                                        <span class="font-mono tracking-tight font-medium bg-zinc-100 px-2 py-0.5 rounded text-zinc-700 text-[11px] border border-zinc-200/50 whitespace-nowrap">{{ $entry->truck_no }}</span>
                                                     </div>
                                                 </td>
                                                 <!-- Center -->
-                                                <td class="py-3.5 px-6 text-zinc-650">
+                                                <td class="py-3.5 px-6 text-zinc-600">
                                                     {{ $entry->unit->name ?? 'N/A' }}
                                                 </td>
                                                 <!-- Source -->
-                                                <td class="py-3.5 px-6">
+                                                <td class="py-3.5 px-6 whitespace-nowrap">
                                                     <div class="flex flex-col text-left">
-                                                        <span class="font-semibold text-zinc-750">{{ $entry->sourced_from ?? 'Spot Buyer' }}</span>
+                                                        <span class="font-semibold text-zinc-700">{{ $entry->sourced_from ?? 'Spot Buyer' }}</span>
                                                         <span class="text-[10px] text-zinc-400 mt-0.5">{{ $entry->purchase_type ?? 'Direct' }}</span>
                                                     </div>
                                                 </td>
                                                 <!-- Moisture -->
-                                                <td class="py-3.5 px-6 text-center">
+                                                <td class="py-3.5 px-6 text-center whitespace-nowrap">
                                                     <span class="inline-flex items-center gap-1 font-semibold {{ $entry->moisture > 10.0 ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-emerald-700 bg-emerald-50 border border-emerald-100' }} px-2 py-0.5 rounded text-[11px]">
                                                         <span class="w-1 h-1 rounded-full {{ $entry->moisture > 10.0 ? 'bg-amber-600' : 'bg-emerald-600' }}"></span>
                                                         {{ number_format($entry->moisture, 1) }}%
                                                     </span>
                                                 </td>
                                                 <!-- FM -->
-                                                <td class="py-3.5 px-6 text-center">
+                                                <td class="py-3.5 px-6 text-center whitespace-nowrap">
                                                     <span class="inline-flex items-center gap-1 font-semibold {{ $entry->fm > 2.0 ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-emerald-700 bg-emerald-50 border border-emerald-100' }} px-2 py-0.5 rounded text-[11px]">
                                                         <span class="w-1 h-1 rounded-full {{ $entry->fm > 2.0 ? 'bg-amber-600' : 'bg-emerald-600' }}"></span>
                                                         {{ number_format($entry->fm, 1) }}%
                                                     </span>
                                                 </td>
                                                 <!-- DM -->
-                                                <td class="py-3.5 px-6 text-center">
+                                                <td class="py-3.5 px-6 text-center whitespace-nowrap">
                                                     <span class="inline-flex items-center gap-1 font-semibold {{ $entry->dm > 2.0 ? 'text-amber-700 bg-amber-50 border border-amber-200' : 'text-emerald-700 bg-emerald-50 border border-emerald-100' }} px-2 py-0.5 rounded text-[11px]">
                                                         <span class="w-1 h-1 rounded-full {{ $entry->dm > 2.0 ? 'bg-amber-600' : 'bg-emerald-600' }}"></span>
                                                         {{ number_format($entry->dm, 1) }}%
                                                     </span>
                                                 </td>
                                                 <!-- Status -->
-                                                <td class="py-3.5 px-6 text-center row-status-cell">
+                                                <td class="py-3.5 px-6 text-center row-status-cell whitespace-nowrap">
                                                     @if($entry->status === 'approved')
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                             Approved
@@ -438,7 +491,7 @@
                                                     @endif
                                                 </td>
                                                 <!-- Received At -->
-                                                <td class="py-3.5 px-6 text-right text-zinc-500 font-mono text-[11px]">
+                                                <td class="py-3.5 px-6 text-right text-zinc-500 font-mono text-[11px] whitespace-nowrap">
                                                     {{ $entry->created_at ? $entry->created_at->format('d M, H:i') : 'N/A' }}
                                                 </td>
                                             </tr>
@@ -464,33 +517,6 @@
                             @endif
                         </div>
                     </div>
-
-                    <!-- Right: Mandi Leaderboard (Col Span 1) -->
-                    <div class="lg:col-span-1 flex flex-col h-full min-h-0">
-                        <div class="bg-white border border-zinc-200/80 rounded-xl p-5 shadow-sm flex flex-col h-full overflow-hidden">
-                            <div class="flex items-center justify-between border-b border-zinc-100 pb-3 shrink-0">
-                                <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 font-sans">Mandi Leaderboard</h4>
-                                <span class="text-[9px] text-zinc-500 font-bold bg-zinc-100 px-2 py-0.5 rounded">Moisture Asc</span>
-                            </div>
-                            <div class="flex-1 overflow-y-auto pt-3 space-y-3.5">
-                                @foreach($mandiLeaderboard as $mandi)
-                                    @php
-                                        $avgM = (float)$mandi->avg_moisture;
-                                    @endphp
-                                    <div class="flex items-center justify-between text-xs">
-                                        <div class="flex items-center gap-2 min-w-0">
-                                            <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ $avgM > 10.0 ? 'bg-amber-500' : 'bg-emerald-500' }}"></span>
-                                            <span class="text-zinc-650 font-semibold truncate text-left" title="{{ $mandi->sourced_from }}">{{ $mandi->sourced_from }}</span>
-                                        </div>
-                                        <div class="flex items-center gap-1.5 shrink-0 pl-2">
-                                            <span class="font-mono font-bold {{ $avgM > 10.0 ? 'text-amber-600' : 'text-emerald-700' }}">{{ number_format($avgM, 1) }}%</span>
-                                            <span class="text-[9px] text-zinc-400 bg-zinc-50 border border-zinc-200/40 px-1 py-0.5 rounded font-mono">{{ $mandi->total_logs }} logs</span>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
                 </section>
             </div>
 
@@ -501,14 +527,14 @@
                         <h3 class="text-sm font-bold text-zinc-900">Procurement Centers</h3>
                         <p class="text-[11px] text-zinc-500 mt-0.5">Manage and monitor active crushing units and receiving depots.</p>
                     </div>
-                    <button onclick="alert('Adding center is disabled in demo mode.')" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm">
+                    <button onclick="openAddCenterModal()" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Center
                     </button>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     @foreach($units as $unit)
-                        <div class="bg-white border border-zinc-200/80 rounded-xl p-5 shadow-sm space-y-4 relative overflow-hidden">
+                        <div class="premium-card bg-white border border-zinc-200/80 rounded-xl p-5 shadow-sm space-y-4 relative overflow-hidden">
                             <div class="flex justify-between items-start">
                                 <div class="space-y-1 text-left">
                                     <span class="text-[9px] uppercase font-bold tracking-wider text-zinc-400 bg-zinc-50 border border-zinc-200/40 px-2 py-0.5 rounded">Unit ID: {{ $unit->id }}</span>
@@ -518,7 +544,7 @@
                                         {{ str_contains($unit->name, 'Baran') ? 'Baran, RJ' : (str_contains($unit->name, 'Kota') ? 'Kota, RJ' : 'Moondla, RJ') }}
                                     </p>
                                 </div>
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-250">Active</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/50">Active</span>
                             </div>
                             
                             <div class="border-t border-zinc-100 pt-4 grid grid-cols-2 gap-4 text-left">
@@ -543,7 +569,7 @@
                         <h3 class="text-sm font-bold text-zinc-900">Unloading Supervisors</h3>
                         <p class="text-[11px] text-zinc-500 mt-0.5">Manage mobile supervisor accounts and access authorizations.</p>
                     </div>
-                    <button onclick="alert('Adding supervisor is disabled in demo mode.')" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm">
+                    <button onclick="openAddSupervisorModal()" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Supervisor
                     </button>
                 </div>
@@ -627,7 +653,7 @@
                     <div class="bg-white border border-zinc-200/80 rounded-xl p-5 shadow-sm space-y-3 relative overflow-hidden">
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 text-left">Out-of-Spec Shipments</h4>
                         <div class="flex items-baseline gap-2 relative z-10 text-left">
-                            <span class="text-2xl font-bold text-amber-650">{{ $stats['out_of_spec'] }}</span>
+                            <span class="text-2xl font-bold text-amber-600">{{ $stats['out_of_spec'] }}</span>
                             <span class="text-[10px] text-zinc-400 font-medium">flagged logs</span>
                         </div>
                         <div class="w-full bg-zinc-100 rounded-full h-1.5 relative z-10">
@@ -915,7 +941,124 @@
             <button onclick="promptRemarks('rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-red-600/10">
                 <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
             </button>
-        </div>iv>
+        </div>
+    </div>
+
+    <!-- Add Procurement Center Modal -->
+    <div id="add-center-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white border border-zinc-200 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col gap-4 text-left">
+            <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-emerald-50 text-[#0d2818] border border-emerald-100/50 rounded-lg">
+                        <i data-lucide="git-branch" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-zinc-900">Add Procurement Center</h3>
+                        <p class="text-[10px] text-zinc-400 font-medium">Create a new crushing unit or receiving depot.</p>
+                    </div>
+                </div>
+                <button onclick="closeAddCenterModal()" class="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-zinc-600 transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <form id="add-center-form" onsubmit="submitAddCenter(event)" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Center Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. Shiv Agrevo Depot, Baran" 
+                        class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Center Code *</label>
+                    <input type="text" name="code" required placeholder="e.g. DEPO-BARAN" 
+                        class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Latitude</label>
+                        <input type="number" step="any" name="latitude" placeholder="e.g. 25.0744" 
+                            class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Longitude</label>
+                        <input type="number" step="any" name="longitude" placeholder="e.g. 75.8372" 
+                            class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                    </div>
+                </div>
+
+                <!-- Error message container -->
+                <div id="add-center-errors" class="hidden text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 text-xs whitespace-pre-line"></div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAddCenterModal()" class="flex-1 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
+                        Save Center
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Supervisor Modal -->
+    <div id="add-supervisor-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white border border-zinc-200 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col gap-4 text-left">
+            <div class="flex justify-between items-center border-b border-zinc-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-blue-50 text-blue-800 border border-blue-100 rounded-lg">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-zinc-900">Add Supervisor</h3>
+                        <p class="text-[10px] text-zinc-400 font-medium">Create a supervisor account for mobile app login.</p>
+                    </div>
+                </div>
+                <button onclick="closeAddSupervisorModal()" class="p-1.5 hover:bg-zinc-100 rounded-full text-zinc-400 hover:text-zinc-600 transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <form id="add-supervisor-form" onsubmit="submitAddSupervisor(event)" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Supervisor Name *</label>
+                    <input type="text" name="name" required placeholder="e.g. Ramesh Kumar" 
+                        class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Phone Number *</label>
+                    <input type="tel" name="phone" required placeholder="e.g. 9876543210"
+                        maxlength="10" inputmode="numeric"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10)"
+                        class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                    <span class="text-[9px] text-zinc-400">Must be exactly 10 digits (used for logging into mobile app).</span>
+                </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">4-Digit Security PIN *</label>
+                    <input type="password" name="pin" required placeholder="e.g. 1234"
+                        maxlength="4" inputmode="numeric"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"
+                        class="w-full px-3 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:bg-white focus:outline-none transition">
+                    <span class="text-[9px] text-zinc-400">Must be exactly 4 digits.</span>
+                </div>
+
+                <!-- Error message container -->
+                <div id="add-supervisor-errors" class="hidden text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 text-xs whitespace-pre-line"></div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeAddSupervisorModal()" class="flex-1 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-semibold rounded-lg transition cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 bg-[#0d2818] hover:bg-[#163a23] text-white text-xs font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
+                        Save Supervisor
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Drawer Controller Script -->
@@ -933,6 +1076,9 @@
                     openDrawer(data, this);
                 });
             });
+
+            // Start polling stats every 5 seconds to keep cards dynamic
+            setInterval(updateStatsWidgets, 5000);
         });
 
         function showToast(message, type = 'success') {
@@ -966,9 +1112,9 @@
             // Reset remarks slide-up panel on open
             hideRemarksPanel();
 
-            // Highlight selected row
-            document.querySelectorAll('.select-row').forEach(r => r.classList.remove('bg-zinc-100/50', 'border-l-zinc-800'));
-            rowElement.classList.add('bg-zinc-100/50', 'border-l-zinc-800');
+            // Highlight selected row using the premium CSS class
+            document.querySelectorAll('.select-row').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
 
             // Text contents
             document.getElementById('drawer-entry-id').innerText = entry.id;
@@ -1115,8 +1261,8 @@
             document.getElementById('drawer-backdrop').classList.remove('opacity-100');
             document.getElementById('drawer-backdrop').classList.add('opacity-0');
             
-            // Remove highlighted row
-            document.querySelectorAll('.select-row').forEach(r => r.classList.remove('bg-zinc-100/50', 'border-l-zinc-800'));
+            // Remove highlighted row using the premium CSS class
+            document.querySelectorAll('.select-row').forEach(r => r.classList.remove('selected'));
             
             // Stop audio if playing
             document.getElementById('drawer-audio-player').pause();
@@ -1229,37 +1375,100 @@
             });
         }
 
-        function updateStatsWidgets() {
-            // Recalculate stats dynamically from visible rows
-            const rows = document.querySelectorAll('.select-row');
-            let total = 0, pending = 0, approved = 0, flagged = 0;
+        function updateTrendBadge(badgeId, svgId, trendStr, isNegativeGood = false) {
+            const badge = document.getElementById(badgeId);
+            const svg = document.getElementById(svgId);
+            if (!badge) return;
+
+            const isNegative = trendStr.startsWith('-');
+            const isZero = trendStr === '0%';
             
-            rows.forEach(row => {
-                const data = JSON.parse(row.dataset.json);
-                total++;
-                if (data.status === 'pending') pending++;
-                else if (data.status === 'approved') approved++;
-                else if (data.status === 'flagged') flagged++;
-            });
+            let isGood = false;
+            if (isZero) {
+                isGood = true;
+            } else if (isNegativeGood) {
+                isGood = isNegative;
+            } else {
+                isGood = !isNegative;
+            }
 
-            // Update DOM
-            const statTotal = document.getElementById('stat-total');
-            const statTotalBadge = document.getElementById('stat-total-badge');
-            const statPending = document.getElementById('stat-pending');
-            const statPendingBadge = document.getElementById('stat-pending-badge');
-            const statApproved = document.getElementById('stat-approved');
-            const statApprovedBadge = document.getElementById('stat-approved-badge');
-            const statFlagged = document.getElementById('stat-flagged');
-            const statFlaggedBadge = document.getElementById('stat-flagged-badge');
+            const iconName = isNegative ? 'trending-down' : 'trending-up';
 
-            if (statTotal) statTotal.innerText = total;
-            if (statTotalBadge) statTotalBadge.innerText = total;
-            if (statPending) statPending.innerText = pending;
-            if (statPendingBadge) statPendingBadge.innerText = pending;
-            if (statApproved) statApproved.innerText = approved;
-            if (statApprovedBadge) statApprovedBadge.innerText = approved;
-            if (statFlagged) statFlagged.innerText = flagged;
-            if (statFlaggedBadge) statFlaggedBadge.innerText = flagged;
+            if (isGood) {
+                badge.className = "inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100";
+                if (svg) {
+                    svg.setAttribute('class', 'w-16 h-8 text-emerald-500');
+                }
+            } else {
+                badge.className = "inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100";
+                if (svg) {
+                    svg.setAttribute('class', 'w-16 h-8 text-rose-500');
+                }
+            }
+
+            badge.innerHTML = `<i data-lucide="${iconName}" class="w-2.5 h-2.5"></i> ${trendStr}`;
+        }
+
+        function updateStatsWidgets() {
+            fetch('/admin/stats')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.stats;
+
+                        // Update counts
+                        if (document.getElementById('stat-total')) {
+                            document.getElementById('stat-total').innerText = Number(stats.total).toLocaleString();
+                        }
+                        if (document.getElementById('stat-pending')) {
+                            document.getElementById('stat-pending').innerText = Number(stats.pending).toLocaleString();
+                        }
+                        if (document.getElementById('stat-out-of-spec')) {
+                            document.getElementById('stat-out-of-spec').innerText = Number(stats.out_of_spec).toLocaleString();
+                        }
+                        if (document.getElementById('stat-approved')) {
+                            document.getElementById('stat-approved').innerText = Number(stats.approved).toLocaleString();
+                        }
+
+                        // Update header mini badges (pill layout)
+                        if (document.getElementById('stat-total-badge')) {
+                            document.getElementById('stat-total-badge').innerText = stats.total;
+                        }
+                        if (document.getElementById('stat-pending-badge')) {
+                            document.getElementById('stat-pending-badge').innerText = stats.pending;
+                        }
+                        if (document.getElementById('stat-approved-badge')) {
+                            document.getElementById('stat-approved-badge').innerText = stats.approved;
+                        }
+                        if (document.getElementById('stat-flagged-badge')) {
+                            document.getElementById('stat-flagged-badge').innerText = stats.flagged;
+                        }
+
+                        // Update sparkline paths
+                        if (document.getElementById('path-total-sparkline')) {
+                            document.getElementById('path-total-sparkline').setAttribute('d', stats.total_sparkline);
+                        }
+                        if (document.getElementById('path-pending-sparkline')) {
+                            document.getElementById('path-pending-sparkline').setAttribute('d', stats.pending_sparkline);
+                        }
+                        if (document.getElementById('path-out-of-spec-sparkline')) {
+                            document.getElementById('path-out-of-spec-sparkline').setAttribute('d', stats.out_of_spec_sparkline);
+                        }
+                        if (document.getElementById('path-approved-sparkline')) {
+                            document.getElementById('path-approved-sparkline').setAttribute('d', stats.approved_sparkline);
+                        }
+
+                        // Update trend badges
+                        updateTrendBadge('badge-total-trend', 'svg-total-sparkline', stats.total_trend, false);
+                        updateTrendBadge('badge-pending-trend', 'svg-pending-sparkline', stats.pending_trend, true);
+                        updateTrendBadge('badge-out-of-spec-trend', 'svg-out-of-spec-sparkline', stats.out_of_spec_trend, true);
+                        updateTrendBadge('badge-approved-trend', 'svg-approved-sparkline', stats.approved_trend, false);
+
+                        // Reinitialize lucide icons for newly injected markup
+                        lucide.createIcons();
+                    }
+                })
+                .catch(err => console.error('Error fetching stats:', err));
         }
 
         function switchTab(tabId) {
@@ -1280,18 +1489,184 @@
                 if (!btn) return;
                 const icon = btn.querySelector('[data-lucide]');
                 if (id === tabId) {
-                    btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold bg-emerald-50/60 text-[#0d2818] border border-emerald-100/50 transition cursor-pointer text-left";
+                    btn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-[#0d2818] to-[#143d24] text-white border border-[#0d2818] transition duration-200 cursor-pointer text-left shadow-md shadow-[#0d2818]/15 translate-x-0.5";
                     if (icon) {
                         icon.classList.remove('text-zinc-400');
-                        icon.classList.add('text-[#0d2818]');
+                        icon.classList.add('text-emerald-200');
                     }
                 } else {
-                    btn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-zinc-50 transition border border-transparent cursor-pointer text-left";
+                    btn.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left";
                     if (icon) {
-                        icon.classList.remove('text-[#0d2818]');
+                        icon.classList.remove('text-emerald-200');
                         icon.classList.add('text-zinc-400');
                     }
                 }
+            });
+        }
+
+        // Add Center Modal helpers
+        function openAddCenterModal() {
+            const modal = document.getElementById('add-center-modal');
+            modal.classList.remove('hidden');
+            document.getElementById('add-center-form').reset();
+            document.getElementById('add-center-errors').classList.add('hidden');
+            document.getElementById('add-center-errors').innerText = '';
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeAddCenterModal() {
+            const modal = document.getElementById('add-center-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function submitAddCenter(event) {
+            event.preventDefault();
+            const form = document.getElementById('add-center-form');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const errorsDiv = document.getElementById('add-center-errors');
+            
+            errorsDiv.classList.add('hidden');
+            errorsDiv.innerText = '';
+            
+            fetch('/admin/units', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: JSON.stringify(data)
+            })
+            .then(async res => {
+                const resData = await res.json();
+                if (res.status === 422) {
+                    let errorMsg = '';
+                    if (resData.errors) {
+                        errorMsg = Object.values(resData.errors).flat().join('\n');
+                    } else {
+                        errorMsg = resData.message;
+                    }
+                    throw new Error(errorMsg);
+                }
+                if (!res.ok) {
+                    throw new Error(resData.message || 'An error occurred.');
+                }
+                return resData;
+            })
+            .then(resData => {
+                if (resData.success) {
+                    showToast('Procurement center added successfully!', 'success');
+                    closeAddCenterModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    errorsDiv.innerText = resData.message || 'An error occurred.';
+                    errorsDiv.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                errorsDiv.innerText = err.message || 'Network error. Please try again.';
+                errorsDiv.classList.remove('hidden');
+            });
+        }
+
+        // Add Supervisor Modal helpers
+        function openAddSupervisorModal() {
+            const modal = document.getElementById('add-supervisor-modal');
+            modal.classList.remove('hidden');
+            document.getElementById('add-supervisor-form').reset();
+            document.getElementById('add-supervisor-errors').classList.add('hidden');
+            document.getElementById('add-supervisor-errors').innerText = '';
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeAddSupervisorModal() {
+            const modal = document.getElementById('add-supervisor-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function submitAddSupervisor(event) {
+            event.preventDefault();
+            const form = document.getElementById('add-supervisor-form');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const errorsDiv = document.getElementById('add-supervisor-errors');
+            
+            errorsDiv.classList.add('hidden');
+            errorsDiv.innerText = '';
+
+            // Client-side validation
+            if (!/^\d{10}$/.test(data.phone)) {
+                errorsDiv.innerText = 'Phone number must be exactly 10 digits (numbers only).';
+                errorsDiv.classList.remove('hidden');
+                return;
+            }
+            if (!/^\d{4}$/.test(data.pin)) {
+                errorsDiv.innerText = 'PIN must be exactly 4 digits (numbers only).';
+                errorsDiv.classList.remove('hidden');
+                return;
+            }
+            
+            fetch('/admin/supervisors', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: JSON.stringify(data)
+            })
+            .then(async res => {
+                const resData = await res.json();
+                if (res.status === 422) {
+                    let errorMsg = '';
+                    if (resData.errors) {
+                        errorMsg = Object.values(resData.errors).flat().join('\n');
+                    } else {
+                        errorMsg = resData.message;
+                    }
+                    throw new Error(errorMsg);
+                }
+                if (!res.ok) {
+                    throw new Error(resData.message || 'An error occurred.');
+                }
+                return resData;
+            })
+            .then(resData => {
+                if (resData.success) {
+                    showToast('Supervisor added successfully!', 'success');
+                    closeAddSupervisorModal();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    errorsDiv.innerText = resData.message || 'An error occurred.';
+                    errorsDiv.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                errorsDiv.innerText = err.message || 'Network error. Please try again.';
+                errorsDiv.classList.remove('hidden');
             });
         }
     </script>
