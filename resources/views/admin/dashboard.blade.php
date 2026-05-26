@@ -14,7 +14,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/admin-dashboard.js'])
 
     <style>
         body {
@@ -293,53 +293,223 @@
             color: #0d2818;
             line-height: 1.2;
         }
-        .activity-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 0.5rem;
-            height: 8rem;
-            padding-top: 0.5rem;
+
+        /* Header profile dropdown */
+        .header-profile-trigger {
+            border: 1px solid transparent;
+            border-radius: 0.625rem;
+            padding: 0.35rem 0.5rem 0.35rem 0.35rem;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
         }
-        .activity-bar-col {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.35rem;
-            min-width: 0;
+        .header-profile-trigger:hover,
+        .header-profile-trigger[aria-expanded="true"] {
+            background: #fff;
+            border-color: #e4e4e7;
         }
-        .activity-bar-track {
+        .header-profile-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.4rem);
+            min-width: 11.5rem;
+            background: #fff;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.625rem;
+            box-shadow: 0 12px 28px -14px rgba(0, 0, 0, 0.18);
+            padding: 0.35rem;
+            z-index: 60;
+        }
+        .header-profile-dropdown button,
+        .header-profile-dropdown a {
             width: 100%;
-            max-width: 2.5rem;
-            height: 6rem;
+            text-align: left;
+            font-size: 0.9375rem;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.5rem;
+            color: #3f3f46;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            cursor: pointer;
+        }
+        .header-profile-dropdown button:hover,
+        .header-profile-dropdown a:hover {
             background: #f4f4f5;
-            border-radius: 0.375rem;
-            display: flex;
-            align-items: flex-end;
-            overflow: hidden;
         }
-        .activity-bar-fill {
-            width: 100%;
-            background: linear-gradient(180deg, #1b4d3e 0%, #0d2818 100%);
-            border-radius: 0.375rem 0.375rem 0 0;
-            min-height: 4px;
-            transition: height 0.3s ease;
+        .header-profile-dropdown .menu-divider {
+            height: 1px;
+            background: #f4f4f5;
+            margin: 0.25rem 0;
         }
-        .status-meter-row {
+        .header-profile-dropdown .menu-signout {
+            color: #b91c1c;
+        }
+        .header-profile-dropdown .menu-signout:hover {
+            background: #fef2f2;
+        }
+
+        /* Modern logs filter panel */
+        .logs-filter-panel {
+            background: #fff;
+            border: 1px solid #e4e4e7;
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 1px 2px rgba(13, 40, 24, 0.04), 0 6px 20px -10px rgba(13, 40, 24, 0.08);
+        }
+        .logs-filter-panel__head {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 0.75rem;
-            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #f4f4f5;
         }
-        .status-meter-row + .status-meter-row {
-            border-top: 1px solid #f4f4f5;
+        .logs-filter-field label {
+            display: block;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #a1a1aa;
+            margin-bottom: 0.35rem;
         }
-        .status-meter-bar {
-            flex: 1;
-            height: 0.375rem;
-            background: #f4f4f5;
-            border-radius: 9999px;
+        .logs-filter-input {
+            width: 100%;
+            padding: 0.55rem 0.75rem 0.55rem 2.25rem;
+            font-size: 0.9375rem;
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.625rem;
+            color: #18181b;
+            transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .logs-filter-input:focus {
+            outline: none;
+            background: #fff;
+            border-color: #0d2818;
+            box-shadow: 0 0 0 3px rgba(13, 40, 24, 0.08);
+        }
+        .logs-filter-select {
+            width: 100%;
+            padding: 0.55rem 2rem 0.55rem 0.75rem;
+            font-size: 0.9375rem;
+            background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.625rem;
+            color: #18181b;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        /* Modern custom dropdown (filter selects) */
+        .modern-select {
+            position: relative;
+            width: 100%;
+        }
+        .modern-select__native {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
             overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .modern-select__trigger {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #18181b;
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.625rem;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .modern-select__trigger:hover {
+            background: #fff;
+            border-color: #d4d4d8;
+        }
+        .modern-select.is-open .modern-select__trigger,
+        .modern-select__trigger:focus-visible {
+            outline: none;
+            background: #fff;
+            border-color: #0d2818;
+            box-shadow: 0 0 0 3px rgba(13, 40, 24, 0.08);
+        }
+        .modern-select__value {
+            flex: 1;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .modern-select__chevron {
+            color: #a1a1aa;
+            display: flex;
+            transition: transform 0.2s ease, color 0.15s ease;
+        }
+        .modern-select.is-open .modern-select__chevron {
+            transform: rotate(180deg);
+            color: #0d2818;
+        }
+        .modern-select__menu {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 0.35rem);
+            z-index: 50;
+            background: #fff;
+            border: 1px solid #e4e4e7;
+            border-radius: 0.75rem;
+            padding: 0.35rem;
+            box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.15);
+            max-height: 14rem;
+            overflow-y: auto;
+        }
+        .modern-select__option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.5rem 0.65rem;
+            font-size: 0.875rem;
+            color: #3f3f46;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.12s ease, color 0.12s ease;
+        }
+        .modern-select__option:hover {
+            background: #f4f4f5;
+        }
+        .modern-select__option.is-selected {
+            background: #ecfdf5;
+            color: #0d2818;
+            font-weight: 600;
+        }
+        .modern-select__check {
+            opacity: 0;
+            font-size: 0.75rem;
+            color: #0d2818;
+            font-weight: 700;
+        }
+        .modern-select__option.is-selected .modern-select__check {
+            opacity: 1;
+        }
+
+        /* Analytics Chart.js containers */
+        .analytics-chart-wrap {
+            position: relative;
+            height: 17.5rem;
+            padding: 0.5rem 0.25rem 0;
         }
         .status-meter-fill {
             height: 100%;
@@ -422,7 +592,6 @@
                 </div>
                 <div>
                     <h1 class="text-sm font-extrabold uppercase tracking-wider text-[#0d2818] leading-tight">SHIV EDIBLES</h1>
-                    <span class="text-[11px] text-[#2e5a44] font-semibold tracking-wide uppercase opacity-75">Procurement Portal</span>
                 </div>
             </div>
         </div>
@@ -468,41 +637,34 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col overflow-hidden bg-[#f5f8f5]">
-        @php
-            $hour = date('H');
-            $greeting = $hour < 12 ? 'Morning' : ($hour < 17 ? 'Afternoon' : 'Evening');
-        @endphp
-        
-        <!-- Header / Stats Summary -->
-        <header class="h-16 bg-[#f5f8f5] border-b border-[#dee4de] px-8 flex items-center justify-between shrink-0">
-            <div>
-                <h2 class="text-base font-bold tracking-tight text-zinc-900 font-sans">Good {{ $greeting }}, {{ auth()->user()->name ?? 'Manager' }}</h2>
-                <p class="text-[11px] text-zinc-500 mt-0.5 font-medium">Here's what's happening at Shiv Edibles today.</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <!-- User Profile & Log Out -->
-                <div class="flex items-center gap-3 pl-1">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 font-semibold text-sm tracking-wider">
-                            {{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 2)) }}
-                        </div>
-                        <div class="hidden md:flex flex-col text-left">
-                            <span class="text-sm font-semibold text-zinc-800 leading-none">{{ auth()->user()->name ?? 'Manager' }}</span>
-                            <span class="text-[9px] text-zinc-400 font-medium mt-0.5">HQ Manager</span>
-                        </div>
+        <!-- Top bar — profile only (page titles live in each module) -->
+        <header class="h-14 bg-[#f5f8f5] border-b border-[#dee4de] px-8 flex items-center justify-end shrink-0">
+            <div class="relative" id="header-profile-menu">
+                <button type="button" id="header-profile-trigger" onclick="toggleProfileMenu(event)" aria-expanded="false" aria-haspopup="true"
+                    class="header-profile-trigger flex items-center gap-2.5 cursor-pointer">
+                    <div id="header-avatar" class="w-9 h-9 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 font-semibold text-sm tracking-wider shrink-0">
+                        {{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 2)) }}
                     </div>
-                    <form action="{{ route('logout') }}" method="POST" class="inline flex items-center">
+                    <div class="hidden md:flex flex-col text-left">
+                        <span id="header-user-name" class="text-sm font-semibold text-zinc-800 leading-none">{{ auth()->user()->name ?? 'Manager' }}</span>
+                        <span id="header-user-role" class="text-[11px] text-zinc-500 font-medium mt-0.5">{{ auth()->user()->role === 'manager' ? 'HQ Manager' : ucfirst(auth()->user()->role ?? 'User') }}</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 hidden md:block shrink-0"></i>
+                </button>
+                <div id="header-profile-dropdown" class="header-profile-dropdown hidden" role="menu">
+                    <button type="button" onclick="openProfileModal()" role="menuitem">
+                        <i data-lucide="user" class="w-4 h-4 text-zinc-500"></i>
+                        Profile
+                    </button>
+                    <div class="menu-divider" role="separator"></div>
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
                         @csrf
-                        <button type="submit" class="p-1.5 hover:bg-red-50 hover:text-red-600 rounded-lg text-zinc-400 transition cursor-pointer flex items-center justify-center border border-transparent hover:border-red-100" title="Log Out">
-                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                        <button type="submit" class="menu-signout" role="menuitem">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            Sign out
                         </button>
                     </form>
                 </div>
-
-                <!-- Time & Refresh -->
-                <button onclick="window.location.reload()" class="p-2 hover:bg-zinc-100/70 rounded-full text-zinc-400 hover:text-zinc-600 transition cursor-pointer">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                </button>
             </div>
         </header>
 
@@ -510,6 +672,10 @@
             <div class="flex-1 overflow-y-auto flex flex-col bg-[#f5f8f5]">
                      <!-- Tab 1: Dashboard Feed -->
             <div id="view-dashboard" class="flex flex-col">
+                <div class="px-8 pt-6 pb-0 shrink-0">
+                    <h3 class="text-base font-bold text-zinc-900">Dashboard</h3>
+                    <p class="text-[11px] text-zinc-500 mt-0.5">Overview of procurement activity and quality metrics.</p>
+                </div>
                 <!-- Stats Grid Block -->
                 @php
                     // Card 1: Total Logs
@@ -536,7 +702,7 @@
                     $approvedBadgeColor = $isApprovedNegative ? 'rose' : 'emerald';
                     $approvedTrendIcon = $isApprovedNegative ? 'trending-down' : 'trending-up';
                 @endphp
-                <section class="p-6 pb-2 shrink-0 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <section class="px-8 pt-5 pb-2 shrink-0 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Card 1: Total Logs -->
                     <div class="premium-card bg-white border border-[#dee4de] rounded-xl p-3.5 flex flex-col justify-between shadow-xs transition duration-200 min-h-[84px] relative overflow-hidden text-left">
                         <div class="flex items-center gap-1.5">
@@ -634,69 +800,79 @@
                     <p class="text-[11px] text-zinc-500 mt-0.5">Search, filter, and review all unloading entries.</p>
                 </div>
 
-                <!-- Search & Filters (Standalone Row) -->
-                <section class="p-8 pb-0 shrink-0">
-                    <div class="bg-white border border-[#dee4de] rounded-xl p-4 shadow-sm">
-                        <form action="{{ route('admin.dashboard') }}" method="GET" class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <!-- Search & Filters -->
+                <section class="px-8 pb-0 pt-5 shrink-0">
+                    <div class="logs-filter-panel">
+                        <form action="{{ route('admin.dashboard') }}" method="GET">
                             <input type="hidden" name="tab" value="logs">
-                            <!-- Left: Search and Dropdowns -->
-                            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                                <!-- Search -->
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-                                        <i data-lucide="search" class="w-3.5 h-3.5"></i>
-                                    </span>
-                                    <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                                        placeholder="Search Truck ID, Supplier..." 
-                                        class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
+                            <div class="logs-filter-panel__head">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-lg bg-[#0d2818]/5 border border-[#0d2818]/10 flex items-center justify-center text-[#0d2818]">
+                                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-zinc-800 leading-tight">Filter entries</p>
+                                        <p class="text-[11px] text-zinc-400 mt-0.5">Search and narrow procurement logs</p>
+                                    </div>
                                 </div>
-
-                                <!-- Procurement Center -->
-                                <div>
-                                    <select name="unit_id" id="unit_id" 
-                                        class="w-full px-3 py-2 text-sm bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
-                                        <option value="">All Units</option>
+                                @php
+                                    $activeFilters = collect(['search', 'unit_id', 'status', 'date_filter'])->filter(fn ($k) => request()->filled($k))->count();
+                                @endphp
+                                @if($activeFilters > 0)
+                                    <span class="text-[11px] font-semibold text-[#0d2818] bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">{{ $activeFilters }} active</span>
+                                @endif
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                                <div class="logs-filter-field sm:col-span-2 xl:col-span-1">
+                                    <label for="search">Search</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                            <i data-lucide="search" class="w-4 h-4"></i>
+                                        </span>
+                                        <input type="text" name="search" id="search" value="{{ request('search') }}"
+                                            placeholder="Truck ID, supplier, plate…"
+                                            class="logs-filter-input">
+                                    </div>
+                                </div>
+                                <div class="logs-filter-field">
+                                    <label for="unit_id">Procurement center</label>
+                                    <select name="unit_id" id="unit_id" class="logs-filter-select">
+                                        <option value="">All units</option>
                                         @foreach($units as $unit)
-                                            <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>
-                                                {{ $unit->name }}
-                                            </option>
+                                            <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-
-                                <!-- Status Filter -->
-                                <div>
-                                    <select name="status" id="status" 
-                                        class="w-full px-3 py-2 text-sm bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
-                                        <option value="">All Quality Statuses</option>
-                                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Verify</option>
-                                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved (In-Spec)</option>
-                                        <option value="flagged" {{ request('status') === 'flagged' ? 'selected' : '' }}>Flagged (Out-of-Spec)</option>
+                                <div class="logs-filter-field">
+                                    <label for="status">Quality status</label>
+                                    <select name="status" id="status" class="logs-filter-select">
+                                        <option value="">All statuses</option>
+                                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending verify</option>
+                                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                                        <option value="flagged" {{ request('status') === 'flagged' ? 'selected' : '' }}>Flagged</option>
                                         <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                        <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Quality Outliers</option>
+                                        <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Quality outliers</option>
                                     </select>
                                 </div>
-
-                                <!-- Time Window -->
-                                <div>
-                                    <select name="date_filter" id="date_filter" 
-                                        class="w-full px-3 py-2 text-sm bg-white border border-zinc-200 rounded-lg focus:border-[#0d2818] focus:outline-none transition">
-                                        <option value="">All Time</option>
+                                <div class="logs-filter-field">
+                                    <label for="date_filter">Time range</label>
+                                    <select name="date_filter" id="date_filter" class="logs-filter-select">
+                                        <option value="">All time</option>
                                         <option value="today" {{ request('date_filter') === 'today' ? 'selected' : '' }}>Today</option>
-                                        <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>Last 7 Days</option>
-                                        <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>Last 30 Days</option>
+                                        <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>Last 7 days</option>
+                                        <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>Last 30 days</option>
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- Right: Action Buttons -->
-                            <div class="flex items-center gap-2 shrink-0 self-end lg:self-auto">
-                                <button type="submit" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-150 flex items-center gap-1.5 cursor-pointer shadow-sm shadow-[#0d2818]/10">
-                                    <i data-lucide="filter" class="w-3.5 h-3.5"></i> Apply Filters
+                            <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-zinc-100">
+                                <button type="submit" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-sm font-semibold py-2.5 px-5 rounded-lg transition duration-150 flex items-center gap-2 cursor-pointer shadow-sm shadow-[#0d2818]/10">
+                                    <i data-lucide="filter" class="w-4 h-4"></i>
+                                    Apply filters
                                 </button>
                                 @if(request()->anyFilled(['search', 'unit_id', 'status', 'date_filter']))
-                                    <a href="{{ route('admin.dashboard', ['tab' => 'logs']) }}" class="px-3 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-medium rounded-lg transition duration-150 flex items-center justify-center cursor-pointer">
-                                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                    <a href="{{ route('admin.dashboard', ['tab' => 'logs']) }}" class="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 cursor-pointer">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                        Clear all
                                     </a>
                                 @endif
                             </div>
@@ -1073,48 +1249,32 @@
                         </div>
                     </div>
 
+                    <script type="application/json" id="analytics-chart-data">@json(['weekly' => $weeklyActivity, 'status' => $analytics['status_rows']])</script>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        <!-- Weekly intake -->
+                        <!-- Weekly intake — Chart.js -->
                         <div class="logs-table-card rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
-                            <div class="px-5 py-4 border-b border-zinc-100">
-                                <p class="text-sm font-semibold text-zinc-800">7-day intake</p>
-                                <p class="text-sm text-zinc-400 mt-0.5">Unloading entries received per day</p>
+                            <div class="px-5 py-4 border-b border-zinc-100 bg-white">
+                                <p class="text-base font-bold text-zinc-900">7-day intake</p>
+                                <p class="text-sm text-zinc-500 mt-0.5">Unloading entries received per day</p>
                             </div>
-                            <div class="p-5">
-                                <div class="activity-bars">
-                                    @foreach($weeklyActivity as $day)
-                                        @php $barPct = $weeklyMax > 0 ? max(4, ($day['count'] / $weeklyMax) * 100) : 4; @endphp
-                                        <div class="activity-bar-col" title="{{ $day['date'] }}: {{ $day['count'] }} entries">
-                                            <div class="activity-bar-track">
-                                                <div class="activity-bar-fill" style="height: {{ $barPct }}%"></div>
-                                            </div>
-                                            <span class="text-[10px] font-medium text-zinc-500">{{ $day['label'] }}</span>
-                                            <span class="text-sm font-semibold text-zinc-800">{{ $day['count'] }}</span>
-                                        </div>
-                                    @endforeach
+                            <div class="px-4 pb-4">
+                                <div class="analytics-chart-wrap">
+                                    <canvas id="chart-weekly-intake" aria-label="7-day intake chart"></canvas>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Verification status -->
+                        <!-- Verification status — Chart.js -->
                         <div class="logs-table-card rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
-                            <div class="px-5 py-4 border-b border-zinc-100">
-                                <p class="text-sm font-semibold text-zinc-800">Verification status</p>
-                                <p class="text-sm text-zinc-400 mt-0.5">How logs are distributed across workflow states</p>
+                            <div class="px-5 py-4 border-b border-zinc-100 bg-white">
+                                <p class="text-base font-bold text-zinc-900">Verification status</p>
+                                <p class="text-sm text-zinc-500 mt-0.5">How logs are distributed across workflow states</p>
                             </div>
-                            <div class="p-5">
-                                @foreach($analytics['status_rows'] as $row)
-                                    @php
-                                        $pct = $stats['total'] > 0 ? round(($row['count'] / $stats['total']) * 100) : 0;
-                                    @endphp
-                                    <div class="status-meter-row">
-                                        <span class="status-pill status-pill--{{ $row['class'] }} w-24 justify-center shrink-0"><span class="status-pill__dot"></span>{{ $row['label'] }}</span>
-                                        <div class="status-meter-bar">
-                                            <div class="status-meter-fill status-meter-fill--{{ $row['class'] }}" style="width: {{ max($pct, $row['count'] > 0 ? 2 : 0) }}%"></div>
-                                        </div>
-                                        <span class="text-sm font-semibold text-zinc-700 w-16 text-right shrink-0">{{ number_format($row['count']) }}</span>
-                                    </div>
-                                @endforeach
+                            <div class="px-4 pb-4">
+                                <div class="analytics-chart-wrap">
+                                    <canvas id="chart-verification-status" aria-label="Verification status chart"></canvas>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1598,7 +1758,16 @@
                 switchTab('logs');
             @elseif(request('tab') === 'settings')
                 switchTab('settings');
+            @elseif(request('tab') === 'analytics')
+                switchTab('analytics');
             @endif
+
+            document.addEventListener('click', function(e) {
+                const menu = document.getElementById('header-profile-menu');
+                if (menu && !menu.contains(e.target)) {
+                    closeProfileMenu();
+                }
+            });
 
             // Row click listener
             document.querySelectorAll('.select-row').forEach(row => {
@@ -1963,6 +2132,40 @@
                 .catch(err => console.error('Error fetching stats:', err));
         }
 
+        function toggleProfileMenu(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('header-profile-dropdown');
+            const trigger = document.getElementById('header-profile-trigger');
+            const isOpen = !dropdown.classList.contains('hidden');
+            if (isOpen) {
+                closeProfileMenu();
+            } else {
+                dropdown.classList.remove('hidden');
+                trigger.setAttribute('aria-expanded', 'true');
+                lucide.createIcons();
+            }
+        }
+
+        function closeProfileMenu() {
+            const dropdown = document.getElementById('header-profile-dropdown');
+            const trigger = document.getElementById('header-profile-trigger');
+            if (dropdown) dropdown.classList.add('hidden');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+
+        function openProfileModal() {
+            closeProfileMenu();
+            switchTab('settings');
+        }
+
+        function updateHeaderProfile(name) {
+            const initials = name.replace(/\s+/g, '').substring(0, 2).toUpperCase() || 'U';
+            const nameEl = document.getElementById('header-user-name');
+            const avatarEl = document.getElementById('header-avatar');
+            if (nameEl) nameEl.textContent = name;
+            if (avatarEl) avatarEl.textContent = initials;
+        }
+
         function submitProfileSettings(event) {
             event.preventDefault();
             const form = document.getElementById('profile-settings-form');
@@ -2006,9 +2209,9 @@
                     showToast('Profile updated successfully.', 'success');
                     form.password.value = '';
                     form.password_confirmation.value = '';
-                    setTimeout(() => {
-                        window.location.href = '{{ route('admin.dashboard') }}?tab=settings';
-                    }, 1200);
+                    if (resData.user?.name) {
+                        updateHeaderProfile(resData.user.name);
+                    }
                 }
             })
             .catch(err => {
@@ -2060,6 +2263,13 @@
                 url.searchParams.set('tab', tabId);
             }
             window.history.replaceState({}, '', url);
+
+            if (tabId === 'analytics' && typeof window.initAnalyticsCharts === 'function') {
+                requestAnimationFrame(() => {
+                    window.initAnalyticsCharts();
+                    window.resizeAnalyticsCharts?.();
+                });
+            }
         }
 
         // Add Center Modal helpers
