@@ -57,10 +57,10 @@
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: #a1a1aa;
-            background: linear-gradient(180deg, #fafafa 0%, #f4f4f5 100%);
-            border-bottom: 1px solid #e4e4e7;
-            padding: 0.875rem 1.25rem;
+            color: #71717a;
+            background: linear-gradient(180deg, #fcfcfd 0%, #f6f7f8 100%);
+            border-bottom: 1px solid #d4d4d8;
+            padding: 0.8rem 1.2rem;
             white-space: nowrap;
         }
         .logs-table thead th:first-child {
@@ -71,10 +71,14 @@
         }
         .logs-table tbody tr.select-row {
             transition: background-color 0.18s ease, box-shadow 0.18s ease;
-            border-bottom: 1px solid #f4f4f5;
+            border-bottom: 1px solid #eceef0;
+            background: #ffffff;
+        }
+        .logs-table tbody tr.select-row:nth-child(even) {
+            background: #fbfcfd;
         }
         .logs-table tbody tr.select-row:hover {
-            background: linear-gradient(90deg, rgba(13, 40, 24, 0.045) 0%, rgba(250, 250, 250, 0.9) 42%);
+            background: linear-gradient(90deg, rgba(13, 40, 24, 0.04) 0%, rgba(255, 255, 255, 0.96) 52%);
         }
         .logs-table tbody tr.select-row:hover .logs-row-chevron {
             opacity: 1;
@@ -85,7 +89,7 @@
             box-shadow: inset 3px 0 0 #0d2818;
         }
         .logs-table tbody td {
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1.2rem;
             vertical-align: middle;
         }
         .logs-table tbody td:first-child {
@@ -199,6 +203,12 @@
             background: #0d2818 !important;
             border-color: #0d2818 !important;
             color: #fff !important;
+        }
+
+        /* Improve readability for compact uppercase subheadings */
+        main h4.text-\[10px\].font-bold.uppercase.tracking-wider,
+        main span.text-\[9px\].uppercase.font-bold.tracking-wider {
+            color: #71717a !important;
         }
 
         /* Compact data tables (supervisors, etc.) */
