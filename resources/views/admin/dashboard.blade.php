@@ -53,21 +53,21 @@
             scrollbar-gutter: stable;
         }
         .logs-table thead th {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: #71717a;
             background: linear-gradient(180deg, #fcfcfd 0%, #f6f7f8 100%);
             border-bottom: 1px solid #d4d4d8;
-            padding: 0.8rem 1.2rem;
+            padding: 0.5rem 0.85rem;
             white-space: nowrap;
         }
         .logs-table thead th:first-child {
-            padding-left: 1.5rem;
+            padding-left: 1rem;
         }
         .logs-table thead th:last-child {
-            padding-right: 1.5rem;
+            padding-right: 1rem;
         }
         .logs-table tbody tr.select-row {
             transition: background-color 0.18s ease, box-shadow 0.18s ease;
@@ -89,14 +89,14 @@
             box-shadow: inset 3px 0 0 #0d2818;
         }
         .logs-table tbody td {
-            padding: 0.85rem 1.2rem;
+            padding: 0.55rem 0.85rem;
             vertical-align: middle;
         }
         .logs-table tbody td:first-child {
-            padding-left: 1.5rem;
+            padding-left: 1rem;
         }
         .logs-table tbody td:last-child {
-            padding-right: 1.5rem;
+            padding-right: 1rem;
         }
         .logs-id-badge {
             display: inline-flex;
@@ -357,39 +357,20 @@
             background: #fef2f2;
         }
 
-        /* Modern logs filter panel */
-        .logs-filter-panel {
-            background: #fff;
-            border: 1px solid #e4e4e7;
-            border-radius: 1rem;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 1px 2px rgba(13, 40, 24, 0.04), 0 6px 20px -10px rgba(13, 40, 24, 0.08);
-        }
-        .logs-filter-panel__head {
+        /* Compact inline logs filter bar */
+        .logs-filter-bar {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #f4f4f5;
-        }
-        .logs-filter-field label {
-            display: block;
-            font-size: 0.6875rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #a1a1aa;
-            margin-bottom: 0.35rem;
+            gap: 0.5rem;
         }
         .logs-filter-input {
             width: 100%;
-            padding: 0.55rem 0.75rem 0.55rem 2.25rem;
-            font-size: 0.9375rem;
+            padding: 0.4rem 0.65rem 0.4rem 2.2rem;
+            font-size: 0.8125rem;
             background: #fafafa;
             border: 1px solid #e4e4e7;
-            border-radius: 0.625rem;
+            border-radius: 0.5rem;
             color: #18181b;
             transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
         }
@@ -397,19 +378,48 @@
             outline: none;
             background: #fff;
             border-color: #0d2818;
-            box-shadow: 0 0 0 3px rgba(13, 40, 24, 0.08);
+            box-shadow: 0 0 0 2px rgba(13, 40, 24, 0.08);
         }
         .logs-filter-select {
             width: 100%;
-            padding: 0.55rem 2rem 0.55rem 0.75rem;
-            font-size: 0.9375rem;
-            background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.6rem center;
+            padding: 0.4rem 1.75rem 0.4rem 0.65rem;
+            font-size: 0.8125rem;
+            background: #fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
             border: 1px solid #e4e4e7;
-            border-radius: 0.625rem;
+            border-radius: 0.5rem;
             color: #18181b;
             appearance: none;
             cursor: pointer;
             transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .logs-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease, color 0.15s ease;
+            white-space: nowrap;
+        }
+        .logs-filter-btn--primary {
+            background: #0d2818;
+            color: #fff;
+            border: 1px solid #0d2818;
+        }
+        .logs-filter-btn--primary:hover {
+            background: #163a23;
+        }
+        .logs-filter-btn--ghost {
+            background: transparent;
+            color: #71717a;
+            border: 1px solid transparent;
+        }
+        .logs-filter-btn--ghost:hover {
+            background: #f4f4f5;
+            color: #3f3f46;
         }
         /* Modern custom dropdown (filter selects) */
         .modern-select {
@@ -433,8 +443,8 @@
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
-            padding: 0.55rem 0.75rem;
-            font-size: 0.9375rem;
+            padding: 0.4rem 0.65rem;
+            font-size: 0.8125rem;
             font-weight: 500;
             color: #18181b;
             background: #fafafa;
@@ -479,23 +489,44 @@
             background: #fff;
             border: 1px solid #e4e4e7;
             border-radius: 0.75rem;
-            padding: 0.35rem;
+            padding: 0.5rem;
             box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.15);
             max-height: 14rem;
             overflow-y: auto;
+        }
+        .modern-select--wide-menu .modern-select__menu,
+        .modern-select:has(#unit_id) .modern-select__menu {
+            right: auto;
+            min-width: 100%;
+            width: max-content;
+            max-width: 22rem;
+            padding: 0.5rem;
         }
         .modern-select__option {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.5rem;
-            padding: 0.5rem 0.65rem;
-            font-size: 0.875rem;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            font-size: 0.8125rem;
+            line-height: 1.45;
             color: #3f3f46;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: background-color 0.12s ease, color 0.12s ease;
+        }
+        .modern-select--wide-menu .modern-select__option,
+        .modern-select:has(#unit_id) .modern-select__option {
+            align-items: flex-start;
+            padding: 0.7rem 1rem;
+        }
+        .modern-select__option-text {
+            flex: 1;
+            min-width: 0;
+            text-align: left;
+            line-height: 1.5;
+            letter-spacing: 0.01em;
         }
         .modern-select__option:hover {
             background: #f4f4f5;
@@ -506,6 +537,8 @@
             font-weight: 600;
         }
         .modern-select__check {
+            flex-shrink: 0;
+            margin-top: 0.1em;
             opacity: 0;
             font-size: 0.75rem;
             color: #0d2818;
@@ -851,117 +884,68 @@
 
             <!-- Tab 2: Procurement Logs (filters + entries table) -->
             <div id="view-logs" class="hidden flex flex-col flex-1 min-h-0">
-                <div class="px-8 pt-6 pb-0 shrink-0">
-                    <h3 class="text-base font-bold text-zinc-900">Procurement Logs</h3>
-                    <p class="text-[11px] text-zinc-500 mt-0.5">Search, filter, and review all unloading entries.</p>
-                </div>
-
-                <!-- Search & Filters -->
-                <section class="px-8 pb-0 pt-5 shrink-0">
-                    <div class="logs-filter-panel">
-                        <form action="{{ route('admin.dashboard') }}" method="GET">
-                            <input type="hidden" name="tab" value="logs">
-                            <div class="logs-filter-panel__head">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="w-8 h-8 rounded-lg bg-[#0d2818]/5 border border-[#0d2818]/10 flex items-center justify-center text-[#0d2818]">
-                                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-zinc-800 leading-tight">Filter entries</p>
-                                        <p class="text-[11px] text-zinc-400 mt-0.5">Search and narrow procurement logs</p>
-                                    </div>
-                                </div>
-                                @php
-                                    $activeFilters = collect(['search', 'unit_id', 'status', 'date_filter'])->filter(fn ($k) => request()->filled($k))->count();
-                                @endphp
-                                @if($activeFilters > 0)
-                                    <span class="text-[11px] font-semibold text-[#0d2818] bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">{{ $activeFilters }} active</span>
-                                @endif
+                <section class="flex-1 px-8 pb-8 pt-5 flex flex-col min-h-0">
+                    <div class="logs-table-card flex flex-col flex-1 min-h-0 rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
+                        <!-- Compact toolbar: title, filters, entry count -->
+                        <div class="shrink-0 px-4 py-2.5 border-b border-zinc-100 bg-gradient-to-r from-white via-white to-emerald-50/30 space-y-2">
+                            <div class="flex items-center justify-between gap-3">
+                                <h3 class="text-sm font-bold text-zinc-900">Procurement Logs</h3>
+                                <p class="text-[11px] text-zinc-400 shrink-0">
+                                    @if($entries->total() > 0)
+                                        {{ number_format($entries->total()) }} {{ Str::plural('entry', $entries->total()) }} · {{ $entries->firstItem() }}–{{ $entries->lastItem() }}
+                                    @else
+                                        No records
+                                    @endif
+                                </p>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                                <div class="logs-filter-field sm:col-span-2 xl:col-span-1">
-                                    <label for="search">Search</label>
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
-                                            <i data-lucide="search" class="w-4 h-4"></i>
-                                        </span>
-                                        <input type="text" name="search" id="search" value="{{ request('search') }}"
-                                            placeholder="Truck ID, supplier, plate…"
-                                            class="logs-filter-input">
-                                    </div>
+                            <form action="{{ route('admin.dashboard') }}" method="GET" class="logs-filter-bar">
+                                <input type="hidden" name="tab" value="logs">
+                                <div class="relative flex-1 min-w-[10rem] max-w-xs">
+                                    <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-zinc-400">
+                                        <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                                    </span>
+                                    <input type="text" name="search" id="search" value="{{ request('search') }}"
+                                        placeholder="Search truck, supplier…"
+                                        aria-label="Search entries"
+                                        class="logs-filter-input">
                                 </div>
-                                <div class="logs-filter-field">
-                                    <label for="unit_id">Procurement center</label>
-                                    <select name="unit_id" id="unit_id" class="logs-filter-select">
+                                <div class="w-[10.5rem] shrink-0">
+                                    <select name="unit_id" id="unit_id" class="logs-filter-select logs-filter-select--units" aria-label="Procurement center">
                                         <option value="">All units</option>
                                         @foreach($units as $unit)
                                             <option value="{{ $unit->id }}" {{ request('unit_id') == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="logs-filter-field">
-                                    <label for="status">Quality status</label>
-                                    <select name="status" id="status" class="logs-filter-select">
+                                <div class="w-[8.5rem] shrink-0">
+                                    <select name="status" id="status" class="logs-filter-select" aria-label="Quality status">
                                         <option value="">All statuses</option>
-                                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending verify</option>
+                                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                                         <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
                                         <option value="flagged" {{ request('status') === 'flagged' ? 'selected' : '' }}>Flagged</option>
                                         <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                                        <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Quality outliers</option>
+                                        <option value="out_of_spec" {{ request('status') === 'out_of_spec' ? 'selected' : '' }}>Outliers</option>
                                     </select>
                                 </div>
-                                <div class="logs-filter-field">
-                                    <label for="date_filter">Time range</label>
-                                    <select name="date_filter" id="date_filter" class="logs-filter-select">
+                                <div class="w-[7.5rem] shrink-0">
+                                    <select name="date_filter" id="date_filter" class="logs-filter-select" aria-label="Time range">
                                         <option value="">All time</option>
                                         <option value="today" {{ request('date_filter') === 'today' ? 'selected' : '' }}>Today</option>
-                                        <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>Last 7 days</option>
-                                        <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>Last 30 days</option>
+                                        <option value="week" {{ request('date_filter') === 'week' ? 'selected' : '' }}>7 days</option>
+                                        <option value="month" {{ request('date_filter') === 'month' ? 'selected' : '' }}>30 days</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-zinc-100">
-                                <button type="submit" class="bg-[#0d2818] hover:bg-[#163a23] text-white text-sm font-semibold py-2.5 px-5 rounded-lg transition duration-150 flex items-center gap-2 cursor-pointer shadow-sm shadow-[#0d2818]/10">
-                                    <i data-lucide="filter" class="w-4 h-4"></i>
-                                    Apply filters
+                                <button type="submit" class="logs-filter-btn logs-filter-btn--primary">
+                                    <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+                                    Apply
                                 </button>
                                 @if(request()->anyFilled(['search', 'unit_id', 'status', 'date_filter']))
-                                    <a href="{{ route('admin.dashboard', ['tab' => 'logs']) }}" class="px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 cursor-pointer">
-                                        <i data-lucide="x" class="w-4 h-4"></i>
-                                        Clear all
+                                    <a href="{{ route('admin.dashboard', ['tab' => 'logs']) }}" class="logs-filter-btn logs-filter-btn--ghost">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                        Clear
                                     </a>
                                 @endif
-                            </div>
-                        </form>
-                    </div>
-                </section>
-
-                <!-- Premium Logs Table -->
-                <section class="flex-1 px-8 pb-8 pt-5 flex flex-col min-h-0">
-                    <div class="logs-table-card flex flex-col flex-1 min-h-0 rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
-                        <!-- Table toolbar -->
-                        <div class="shrink-0 px-5 py-4 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gradient-to-r from-white via-white to-emerald-50/30">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-[#0d2818]/5 border border-[#0d2818]/10 flex items-center justify-center text-[#0d2818]">
-                                    <i data-lucide="layers" class="w-4 h-4"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-zinc-800 leading-tight">
-                                        {{ number_format($entries->total()) }} {{ Str::plural('entry', $entries->total()) }}
-                                    </p>
-                                    @if($entries->total() > 0)
-                                        <p class="text-[11px] text-zinc-400 mt-0.5">
-                                            Showing {{ $entries->firstItem() }}–{{ $entries->lastItem() }} of {{ number_format($entries->total()) }}
-                                        </p>
-                                    @else
-                                        <p class="text-[11px] text-zinc-400 mt-0.5">No records to display</p>
-                                    @endif
-                                </div>
-                            </div>
-                            <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 sm:justify-end">
-                                <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i>
-                                Select a row to open details
-                            </p>
+                            </form>
                         </div>
 
                         <div class="flex-1 overflow-auto logs-table-scroll min-h-0">
@@ -1011,7 +995,7 @@
                                                     </span>
                                                     <div class="min-w-0">
                                                         <p class="font-semibold text-zinc-800 truncate max-w-[160px]" title="{{ $sourceLabel }}">{{ $sourceLabel }}</p>
-                                                        <p class="text-[10px] text-zinc-400 mt-0.5">{{ $entry->purchase_type ?? 'Direct' }}</p>
+                                                        <p class="text-[10px] text-zinc-400 mt-0.5">{{ $entry->purchase_type ?? 'Depo' }}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -1364,8 +1348,8 @@
                     <div class="logs-table-card rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
                         <div class="px-5 py-4 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-gradient-to-r from-white via-white to-emerald-50/30">
                             <div>
-                                <p class="text-sm font-semibold text-zinc-800">Top suppliers by volume</p>
-                                <p class="text-sm text-zinc-400 mt-0.5">Highest-traffic mandis and sourcing points</p>
+                                <p class="text-sm font-semibold text-zinc-800">Top sourcing points by volume</p>
+                                <p class="text-sm text-zinc-400 mt-0.5">Highest-traffic depots, mandis, and source locations</p>
                             </div>
                         </div>
                         <div class="overflow-x-auto logs-table-scroll">
@@ -1373,7 +1357,7 @@
                                 <thead>
                                     <tr>
                                         <th class="w-12">#</th>
-                                        <th>Supplier / Mandi</th>
+                                        <th>Source Location</th>
                                         <th class="text-center">Logs</th>
                                         <th class="text-center">Avg moisture</th>
                                         <th class="text-center">Issues</th>
@@ -1522,7 +1506,7 @@
                 </div>
                 <div class="border-t border-zinc-200/60 my-1"></div>
                 <div>
-                    <span class="text-[9px] uppercase font-bold tracking-wider text-zinc-400">Supplier / Source Mandi</span>
+                    <span class="text-[9px] uppercase font-bold tracking-wider text-zinc-400">Source Location</span>
                     <p class="text-sm font-semibold text-[#0d2818] mt-0.5" id="drawer-supplier">Kota Mandi / Rajasthan</p>
                 </div>
             </div>
@@ -1981,8 +1965,8 @@
             });
 
             document.getElementById('drawer-center').innerText = entry.unit ? entry.unit.name : 'N/A';
-            document.getElementById('drawer-purchase-type').innerText = entry.purchase_type || 'Direct';
-            document.getElementById('drawer-supplier').innerText = entry.sourced_from || 'Spot Buyer';
+            document.getElementById('drawer-purchase-type').innerText = entry.purchase_type || 'Depo';
+            document.getElementById('drawer-supplier').innerText = entry.sourced_from || 'Unknown source';
 
             const thresholds = getThresholds();
             const moisture = parseFloat(entry.moisture);
@@ -1999,29 +1983,36 @@
             }
 
             // Weighbridge & deductions calculator
-            const gross = parseFloat(entry.gross_weight) || 0;
-            const tare = parseFloat(entry.tare_weight) || 0;
-            const net = parseFloat(entry.net_weight) || (gross - tare);
-            
-            document.getElementById('drawer-operator').innerText = 'Operator: ' + (entry.operator_name || 'N/A');
-            document.getElementById('drawer-gross-weight').innerText = gross.toFixed(3) + ' MT';
-            document.getElementById('drawer-tare-weight').innerText = tare.toFixed(3) + ' MT';
-            document.getElementById('drawer-net-weight').innerText = net.toFixed(3) + ' MT';
+            const weighbridgeContainer = document.getElementById('drawer-weighbridge-container');
+            const hasWeighbridgeData = entry.gross_weight != null || entry.tare_weight != null || entry.net_weight != null;
+            if (hasWeighbridgeData) {
+                weighbridgeContainer.style.display = 'block';
+                const gross = parseFloat(entry.gross_weight) || 0;
+                const tare = parseFloat(entry.tare_weight) || 0;
+                const net = parseFloat(entry.net_weight) || (gross - tare);
 
-            let mDeduct = 0;
-            if (moisture > thresholds.moisture) {
-                mDeduct = (moisture - thresholds.moisture) * 0.015 * net;
+                document.getElementById('drawer-operator').innerText = 'Operator: ' + (entry.operator_name || 'N/A');
+                document.getElementById('drawer-gross-weight').innerText = gross.toFixed(3) + ' MT';
+                document.getElementById('drawer-tare-weight').innerText = tare.toFixed(3) + ' MT';
+                document.getElementById('drawer-net-weight').innerText = net.toFixed(3) + ' MT';
+
+                let mDeduct = 0;
+                if (moisture > thresholds.moisture) {
+                    mDeduct = (moisture - thresholds.moisture) * 0.015 * net;
+                }
+                document.getElementById('drawer-moisture-deduction').innerText = '-' + mDeduct.toFixed(3) + ' MT';
+
+                let fmDeduct = 0;
+                if (fm > thresholds.fm) {
+                    fmDeduct = (fm - thresholds.fm) * 0.01 * net;
+                }
+                document.getElementById('drawer-fm-deduction').innerText = '-' + fmDeduct.toFixed(3) + ' MT';
+
+                const netPayoutWeight = net - mDeduct - fmDeduct;
+                document.getElementById('drawer-payout-weight').innerText = netPayoutWeight.toFixed(3) + ' MT';
+            } else {
+                weighbridgeContainer.style.display = 'none';
             }
-            document.getElementById('drawer-moisture-deduction').innerText = '-' + mDeduct.toFixed(3) + ' MT';
-
-            let fmDeduct = 0;
-            if (fm > thresholds.fm) {
-                fmDeduct = (fm - thresholds.fm) * 0.01 * net;
-            }
-            document.getElementById('drawer-fm-deduction').innerText = '-' + fmDeduct.toFixed(3) + ' MT';
-
-            const netPayoutWeight = net - mDeduct - fmDeduct;
-            document.getElementById('drawer-payout-weight').innerText = netPayoutWeight.toFixed(3) + ' MT';
 
             // Review comments timeline
             const remarkText = entry.remarks ? `"${entry.remarks}"` : '"No comments added yet."';
@@ -2058,8 +2049,10 @@
             function mediaCaption(media) {
                 if (media.caption) return media.caption;
                 if (media.type === 'truck') return 'Weighbridge capture';
+                if (media.type === 'photo') return 'Field photo capture';
+                if (media.type === 'material') return 'Material quality capture';
                 if (media.type === 'video' || isVideoMedia(media)) return 'Video capture';
-                return 'Material quality capture';
+                return 'Field capture';
             }
 
             function renderMediaCard(media) {

@@ -184,6 +184,9 @@ function buildModernSelect(select) {
     select.dataset.modernized = '1';
     const wrap = document.createElement('div');
     wrap.className = 'modern-select';
+    if (select.classList.contains('logs-filter-select--units')) {
+        wrap.classList.add('modern-select--wide-menu');
+    }
 
     select.parentNode.insertBefore(wrap, select);
     wrap.appendChild(select);
