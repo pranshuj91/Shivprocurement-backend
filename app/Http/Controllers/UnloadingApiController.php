@@ -97,33 +97,21 @@ class UnloadingApiController extends Controller
         ]);
     }
 
-    public function getEntries()
+    public function getEntries(Request $request)
     {
+        $user = $request->user();
+
         $entries = UnloadingEntry::with(['unit', 'mediaLogs'])
+            ->when($user, function ($query) use ($user) {
+                // Supervisors only see their own entries; legacy rows (null created_by) stay visible
+                $query->where(function ($q) use ($user) {
+                    $q->where('created_by', $user->id)
+                        ->orWhereNull('created_by');
+                });
+            })
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($e) {
-                return [
-                    'id'            => $e->id,
-                    'unit_id'       => $e->unit_id,
-                    'truck_no'      => $e->truck_no,
-                    'purchase_type' => $e->purchase_type,
-                    'sourced_from'  => $e->sourced_from,
-                    'moisture'      => $e->moisture,
-                    'fm'            => $e->fm,
-                    'dm'            => $e->dm,
-                    'status'        => $e->status,
-                    'latitude'      => $e->latitude,
-                    'longitude'     => $e->longitude,
-                    'gps_accuracy'  => $e->gps_accuracy,
-                    'created_at'    => $e->created_at,
-                    'media_logs'    => $e->mediaLogs->map(fn($m) => [
-                        'type'      => $m->type,
-                        'file_path' => $m->file_path,
-                        'caption'   => $m->caption,
-                    ]),
-                ];
-            });
+            ->map(fn ($e) => $this->formatEntry($e));
 
         return response()->json($entries);
     }
@@ -152,10 +140,20 @@ class UnloadingApiController extends Controller
             ], 422);
         }
 
+        $user = $request->user();
+
         // Resilient sync check — prevent duplicate submissions
         $id = $request->input('id');
         $existing = UnloadingEntry::with(['unit', 'mediaLogs'])->find($id);
         if ($existing) {
+            // Only the owner (or legacy null-owner) can update
+            if ($existing->created_by && $user && (int) $existing->created_by !== (int) $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You do not have permission to update this entry.',
+                ], 403);
+            }
+
             $existing->update([
                 'unit_id'       => $request->input('unit_id'),
                 'truck_no'      => $request->input('truck_no'),
@@ -167,6 +165,7 @@ class UnloadingApiController extends Controller
                 'latitude'      => $request->input('latitude'),
                 'longitude'     => $request->input('longitude'),
                 'gps_accuracy'  => $request->input('gps_accuracy'),
+                'created_by'    => $existing->created_by ?: ($user?->id),
             ]);
 
             // Keep track of preserved media logs
@@ -185,68 +184,15 @@ class UnloadingApiController extends Controller
 
             // Process all media logs
             foreach ($incomingMedia as $mediaItem) {
-                $type       = $mediaItem['type'] ?? 'unknown';
-                $base64Data = $mediaItem['data'] ?? '';
-
-                if (empty($base64Data)) continue;
-
-                // If this is an existing media path, preserve it.
-                if (is_string($base64Data) && (str_starts_with($base64Data, '/storage/') || str_starts_with($base64Data, '/images/'))) {
-                    $existing->mediaLogs()->where('file_path', $base64Data)->update([
-                        'caption' => $mediaItem['caption'] ?? null
-                    ]);
-                    continue;
-                }
-
-                // Decode new base64 data
-                $ext = 'jpg';
-                if ($type === 'audio')  $ext = 'm4a';
-                if ($type === 'video')  $ext = 'mp4';
-
-                if (preg_match('/^data:[^;]+;base64,(.*)$/', $base64Data, $matches)) {
-                    $raw = $matches[1];
-                    if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
-                    elseif (preg_match('/^data:audio\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
-                    elseif (preg_match('/^data:video\/(\w+);base64,/', $base64Data, $t)) $ext = $t[1];
-                } else {
-                    $raw = $base64Data;
-                }
-
-                $decoded = base64_decode($raw);
-                if ($decoded !== false) {
-                    $filename = $type . '_' . uniqid() . '.' . $ext;
-                    $path = 'media/' . $filename;
-                    Storage::disk('public')->put($path, $decoded);
-
-                    $existing->mediaLogs()->create([
-                        'type'      => $type,
-                        'file_path' => '/storage/' . $path,
-                        'caption'   => $mediaItem['caption'] ?? null,
-                    ]);
-                }
+                $this->storeMediaItem($existing, $mediaItem);
             }
 
-            $savedEntry = UnloadingEntry::find($id)->load(['unit', 'mediaLogs']);
+            $savedEntry = UnloadingEntry::with(['unit', 'mediaLogs'])->find($id);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Entry updated and synced successfully',
-                'entry'   => [
-                    'id'            => $savedEntry->id,
-                    'unit_id'       => $savedEntry->unit_id,
-                    'truck_no'      => $savedEntry->truck_no,
-                    'purchase_type' => $savedEntry->purchase_type,
-                    'sourced_from'  => $savedEntry->sourced_from,
-                    'moisture'      => $savedEntry->moisture,
-                    'fm'            => $savedEntry->fm,
-                    'dm'            => $savedEntry->dm,
-                    'status'        => $savedEntry->status,
-                    'latitude'      => $savedEntry->latitude,
-                    'longitude'     => $savedEntry->longitude,
-                    'gps_accuracy'  => $savedEntry->gps_accuracy,
-                    'created_at'    => $savedEntry->created_at,
-                    'media_logs'    => $savedEntry->mediaLogs,
-                ],
+                'entry'   => $this->formatEntry($savedEntry),
             ]);
         }
 
@@ -264,41 +210,13 @@ class UnloadingApiController extends Controller
             'latitude'      => $request->input('latitude'),
             'longitude'     => $request->input('longitude'),
             'gps_accuracy'  => $request->input('gps_accuracy'),
+            'created_by'    => $user?->id,
         ]);
 
         // Decode and save media files if provided
         if ($request->has('media') && is_array($request->input('media'))) {
             foreach ($request->input('media') as $mediaItem) {
-                $type       = $mediaItem['type'] ?? 'unknown';
-                $base64Data = $mediaItem['data'] ?? '';
-
-                if (empty($base64Data)) continue;
-
-                $ext = 'jpg';
-                if ($type === 'audio')  $ext = 'm4a';
-                if ($type === 'video')  $ext = 'mp4';
-
-                if (preg_match('/^data:[^;]+;base64,(.*)$/', $base64Data, $matches)) {
-                    $raw = $matches[1];
-                    if (preg_match('/^data:image\/(\w+);base64,/', $mediaItem['data'], $t)) $ext = $t[1];
-                    elseif (preg_match('/^data:audio\/(\w+);base64,/', $mediaItem['data'], $t)) $ext = $t[1];
-                    elseif (preg_match('/^data:video\/(\w+);base64,/', $mediaItem['data'], $t)) $ext = $t[1];
-                } else {
-                    $raw = $base64Data;
-                }
-
-                $decoded = base64_decode($raw);
-                if ($decoded !== false) {
-                    $filename = $type . '_' . uniqid() . '.' . $ext;
-                    $path = 'media/' . $filename;
-                    Storage::disk('public')->put($path, $decoded);
-
-                    $entry->mediaLogs()->create([
-                        'type'      => $type,
-                        'file_path' => '/storage/' . $path,
-                        'caption'   => $mediaItem['caption'] ?? null,
-                    ]);
-                }
+                $this->storeMediaItem($entry, $mediaItem);
             }
         }
 
@@ -307,22 +225,93 @@ class UnloadingApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Entry synced successfully',
-            'entry'   => [
-                'id'            => $savedEntry->id,
-                'unit_id'       => $savedEntry->unit_id,
-                'truck_no'      => $savedEntry->truck_no,
-                'purchase_type' => $savedEntry->purchase_type,
-                'sourced_from'  => $savedEntry->sourced_from,
-                'moisture'      => $savedEntry->moisture,
-                'fm'            => $savedEntry->fm,
-                'dm'            => $savedEntry->dm,
-                'status'        => $savedEntry->status,
-                'latitude'      => $savedEntry->latitude,
-                'longitude'     => $savedEntry->longitude,
-                'gps_accuracy'  => $savedEntry->gps_accuracy,
-                'created_at'    => $savedEntry->created_at,
-                'media_logs'    => $savedEntry->mediaLogs,
-            ],
+            'entry'   => $this->formatEntry($savedEntry),
         ], 201);
+    }
+
+    private function formatEntry(UnloadingEntry $e): array
+    {
+        return [
+            'id'            => $e->id,
+            'unit_id'       => $e->unit_id,
+            'unit'          => $e->unit ? [
+                'id'   => $e->unit->id,
+                'name' => $e->unit->name,
+                'code' => $e->unit->code,
+            ] : null,
+            'truck_no'      => $e->truck_no,
+            'purchase_type' => $e->purchase_type,
+            'sourced_from'  => $e->sourced_from,
+            'moisture'      => $e->moisture,
+            'fm'            => $e->fm,
+            'dm'            => $e->dm,
+            'status'        => $e->status,
+            'remarks'       => $e->remarks,
+            'latitude'      => $e->latitude,
+            'longitude'     => $e->longitude,
+            'gps_accuracy'  => $e->gps_accuracy,
+            'created_by'    => $e->created_by,
+            'created_at'    => $e->created_at,
+            'media_logs'    => $e->mediaLogs->map(fn ($m) => [
+                'type'      => $m->type,
+                'file_path' => $m->file_path,
+                'caption'   => $m->caption,
+            ]),
+        ];
+    }
+
+    private function storeMediaItem(UnloadingEntry $entry, array $mediaItem): void
+    {
+        $type       = $mediaItem['type'] ?? 'unknown';
+        $base64Data = $mediaItem['data'] ?? '';
+
+        if ($base64Data === '' || $base64Data === null) {
+            return;
+        }
+
+        // Existing media path — preserve/update caption only
+        if (is_string($base64Data) && (str_starts_with($base64Data, '/storage/') || str_starts_with($base64Data, '/images/'))) {
+            $entry->mediaLogs()->where('file_path', $base64Data)->update([
+                'caption' => $mediaItem['caption'] ?? null,
+            ]);
+
+            return;
+        }
+
+        $ext = 'jpg';
+        if ($type === 'audio') {
+            $ext = 'm4a';
+        }
+        if ($type === 'video') {
+            $ext = 'mp4';
+        }
+
+        if (preg_match('/^data:[^;]+;base64,(.*)$/', $base64Data, $matches)) {
+            $raw = $matches[1];
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $t)) {
+                $ext = $t[1];
+            } elseif (preg_match('/^data:audio\/(\w+);base64,/', $base64Data, $t)) {
+                $ext = $t[1];
+            } elseif (preg_match('/^data:video\/(\w+);base64,/', $base64Data, $t)) {
+                $ext = $t[1];
+            }
+        } else {
+            $raw = $base64Data;
+        }
+
+        $decoded = base64_decode($raw, true);
+        if ($decoded === false || $decoded === '') {
+            return;
+        }
+
+        $filename = $type.'_'.uniqid().'.'.$ext;
+        $path = 'media/'.$filename;
+        Storage::disk('public')->put($path, $decoded);
+
+        $entry->mediaLogs()->create([
+            'type'      => $type,
+            'file_path' => '/storage/'.$path,
+            'caption'   => $mediaItem['caption'] ?? null,
+        ]);
     }
 }
