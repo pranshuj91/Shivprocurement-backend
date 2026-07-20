@@ -39,6 +39,7 @@ class UnloadingEntry extends Model
         'lab_dm',
         'lab_recorded_at',
         'lab_recorded_by',
+        'created_by',
     ];
 
     protected function casts(): array
@@ -61,6 +62,11 @@ class UnloadingEntry extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function mediaLogs(): HasMany

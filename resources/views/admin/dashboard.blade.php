@@ -1624,22 +1624,15 @@
                 </div>
             </div>
 
-            <!-- Audio Recording Note -->
-            <div class="space-y-3" id="drawer-audio-container">
-                <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Voice quality recording</h4>
-                <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 flex flex-col gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full shrink-0">
-                            <i data-lucide="mic" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Field Note Note</span>
-                            <p class="text-sm font-semibold text-zinc-700">Supervisor Audio Verification</p>
-                        </div>
-                    </div>
-                    <audio id="drawer-audio-player" controls class="w-full h-9 rounded-md outline-none"></audio>
+            <!-- Audio Recording Notes (supports multiple) -->
+            <div class="space-y-3" id="drawer-audio-container" style="display: none;">
+                <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Voice quality recordings</h4>
+                <div id="drawer-audio-list" class="space-y-3">
+                    <!-- Audio players filled dynamically -->
                 </div>
-            </div>            <!-- GPS Location -->
+            </div>
+
+            <!-- GPS Location -->
             <div class="space-y-3">
                 <h4 class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">GPS Audit Coordinates</h4>
                 <div class="bg-zinc-50 border border-zinc-200/60 rounded-lg p-4 flex items-center justify-between">
@@ -1960,8 +1953,10 @@
             document.getElementById('drawer-plate').innerText = entry.truck_no;
             
             const dateObj = new Date(entry.created_at);
-            document.getElementById('drawer-date').innerText = dateObj.toLocaleDateString('en-GB', {
-                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            document.getElementById('drawer-date').innerText = dateObj.toLocaleString('en-GB', {
+                timeZone: 'Asia/Kolkata',
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: false
             });
 
             document.getElementById('drawer-center').innerText = entry.unit ? entry.unit.name : 'N/A';
@@ -2083,13 +2078,13 @@
                 `;
             }
 
-            let audioLog = null;
             const mediaLogs = entry.media_logs || entry.mediaLogs || [];
+            const audioLogs = [];
             let visualCount = 0;
 
             mediaLogs.forEach(media => {
                 if (media.type === 'audio') {
-                    audioLog = media;
+                    audioLogs.push(media);
                     return;
                 }
                 gallery.innerHTML += renderMediaCard(media);
@@ -2104,15 +2099,35 @@
                 `;
             }
 
-            // Audio Player configuration
+            // Audio players — show every recorded note (not just the last one)
             const audioContainer = document.getElementById('drawer-audio-container');
-            const audioPlayer = document.getElementById('drawer-audio-player');
-            if (audioLog) {
+            const audioList = document.getElementById('drawer-audio-list');
+            audioList.innerHTML = '';
+            if (audioLogs.length > 0) {
                 audioContainer.style.display = 'block';
-                audioPlayer.src = resolveMediaUrl(audioLog.file_path);
+                audioLogs.forEach((audioLog, index) => {
+                    const caption = (audioLog.caption || '').trim();
+                    const label = caption || `Audio note ${index + 1}`;
+                    const url = resolveMediaUrl(audioLog.file_path);
+                    const safeLabel = label.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    audioList.innerHTML += `
+                        <div class="bg-zinc-50 border border-zinc-200 rounded-lg p-4 flex flex-col gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full shrink-0">
+                                    <i data-lucide="mic" class="w-4 h-4"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Field note ${index + 1} of ${audioLogs.length}</span>
+                                    <p class="text-sm font-semibold text-zinc-700 truncate">${safeLabel}</p>
+                                </div>
+                            </div>
+                            <audio controls preload="metadata" class="w-full h-9 rounded-md outline-none drawer-audio-player" src="${url}"></audio>
+                        </div>
+                    `;
+                });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             } else {
                 audioContainer.style.display = 'none';
-                audioPlayer.src = '';
             }
 
             if (typeof refreshDrawerLabSection === 'function') {
@@ -2148,8 +2163,10 @@
             // Remove highlighted row using the premium CSS class
             document.querySelectorAll('.select-row').forEach(r => r.classList.remove('selected'));
             
-            // Stop audio if playing
-            document.getElementById('drawer-audio-player').pause();
+            // Stop all audio players if playing
+            document.querySelectorAll('.drawer-audio-player').forEach((player) => {
+                try { player.pause(); } catch (e) {}
+            });
 
             setTimeout(() => {
                 backdrop.classList.add('hidden');

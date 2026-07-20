@@ -157,7 +157,11 @@ function refreshDrawerLabSection(entry) {
     document.getElementById('drawer-lab-fm').textContent = entry.lab_fm != null ? parseFloat(entry.lab_fm).toFixed(1) + '%' : '—';
     document.getElementById('drawer-lab-dm').textContent = entry.lab_dm != null ? parseFloat(entry.lab_dm).toFixed(1) + '%' : '—';
     const recorded = entry.lab_recorded_at
-        ? new Date(entry.lab_recorded_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        ? new Date(entry.lab_recorded_at).toLocaleString('en-GB', {
+            timeZone: 'Asia/Kolkata',
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: false,
+        })
         : '—';
     document.getElementById('drawer-lab-recorded').textContent = recorded;
     const recorder = entry.lab_recorded_by?.name || '—';
