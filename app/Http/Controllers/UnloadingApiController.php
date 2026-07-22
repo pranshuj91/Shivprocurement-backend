@@ -251,7 +251,7 @@ class UnloadingApiController extends Controller
             'longitude'     => $e->longitude,
             'gps_accuracy'  => $e->gps_accuracy,
             'created_by'    => $e->created_by,
-            'created_at'    => $e->created_at,
+            'created_at'    => optional($e->created_at)->toIso8601String(),
             'media_logs'    => $e->mediaLogs->map(fn ($m) => [
                 'type'      => $m->type,
                 'file_path' => $m->file_path,

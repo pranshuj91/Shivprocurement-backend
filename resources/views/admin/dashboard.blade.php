@@ -1681,15 +1681,20 @@
         </div>
  
         <!-- Drawer Footer Controls -->
-        <div id="drawer-actions-footer" class="p-6 border-t border-zinc-200 bg-zinc-50/50 flex gap-3 shrink-0">
-            <button onclick="promptRemarks('approved')" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-700/10">
-                <i data-lucide="check-circle" class="w-4 h-4"></i> Approve Log
-            </button>
-            <button onclick="promptRemarks('flagged')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/10">
-                <i data-lucide="alert-triangle" class="w-4 h-4"></i> Flag Quality
-            </button>
-            <button onclick="promptRemarks('rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-red-600/10">
-                <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
+        <div id="drawer-actions-footer" class="p-6 border-t border-zinc-200 bg-zinc-50/50 flex flex-col gap-3 shrink-0">
+            <div class="flex gap-3">
+                <button onclick="promptRemarks('approved')" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-emerald-700/10">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> Approve Log
+                </button>
+                <button onclick="promptRemarks('flagged')" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-amber-500/10">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Flag Quality
+                </button>
+                <button onclick="promptRemarks('rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shadow-red-600/10">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i> Reject
+                </button>
+            </div>
+            <button type="button" onclick="confirmDeleteEntry()" class="w-full bg-white hover:bg-red-50 text-red-600 border border-red-200 hover:border-red-300 text-sm font-semibold py-2.5 px-4 rounded-md transition duration-150 flex items-center justify-center gap-1.5 cursor-pointer">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Entry
             </button>
         </div>
     </div>
@@ -2270,6 +2275,62 @@
             .catch(err => {
                 document.body.classList.remove('pointer-events-none');
                 showToast('Network error while updating status.', 'error');
+                console.error(err);
+            });
+        }
+
+        function confirmDeleteEntry() {
+            if (!currentEntryId) return;
+            const plate = document.getElementById('drawer-plate')?.innerText || currentEntryId;
+            const ok = window.confirm(`Delete unloading entry ${currentEntryId} (${plate})?\n\nThis permanently removes the log and its media. This cannot be undone.`);
+            if (!ok) return;
+            deleteEntry();
+        }
+
+        function deleteEntry() {
+            if (!currentEntryId) return;
+
+            const entryId = currentEntryId;
+            const url = `/admin/entries/${entryId}`;
+            const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            document.body.classList.add('pointer-events-none');
+
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(async (res) => {
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || `Delete failed (${res.status})`);
+                }
+                return data;
+            })
+            .then(() => {
+                document.body.classList.remove('pointer-events-none');
+                showToast('Entry deleted successfully.', 'success');
+
+                const row = document.querySelector(`tr[data-id="${entryId}"]`);
+                if (row) {
+                    row.remove();
+                }
+
+                if (typeof logsEntriesById !== 'undefined' && logsEntriesById && typeof logsEntriesById === 'object') {
+                    delete logsEntriesById[entryId];
+                    delete logsEntriesById[String(entryId)];
+                }
+
+                updateStatsWidgets();
+                closeDrawer();
+            })
+            .catch((err) => {
+                document.body.classList.remove('pointer-events-none');
+                showToast(err?.message || 'Network error while deleting entry.', 'error');
                 console.error(err);
             });
         }

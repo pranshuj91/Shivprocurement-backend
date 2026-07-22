@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class AdminDashboardController extends Controller
@@ -333,6 +334,30 @@ class AdminDashboardController extends Controller
             'message' => 'Status updated successfully.',
             'status' => $entry->status,
             'remarks' => $entry->remarks,
+        ]);
+    }
+
+    public function destroyEntry($id)
+    {
+        $entry = UnloadingEntry::with('mediaLogs')->findOrFail($id);
+
+        foreach ($entry->mediaLogs as $media) {
+            $path = $media->file_path ?? '';
+            if (is_string($path) && str_starts_with($path, '/storage/')) {
+                $relative = substr($path, strlen('/storage/'));
+                if ($relative !== '' && Storage::disk('public')->exists($relative)) {
+                    Storage::disk('public')->delete($relative);
+                }
+            }
+        }
+
+        // media_logs rows cascade via FK; delete the entry itself
+        $entry->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Entry deleted successfully.',
+            'id' => $id,
         ]);
     }
 
