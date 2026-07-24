@@ -51,28 +51,47 @@
         }
         .logs-table-scroll {
             scrollbar-gutter: stable;
+            overflow-x: auto;
+        }
+        .logs-table {
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        /* Equal gap between every column = same horizontal padding on every cell */
+        .logs-table thead th,
+        .logs-table tbody td {
+            padding: 0.5rem 0.65rem;
+            vertical-align: middle;
+            text-align: left;
+            overflow: hidden;
         }
         .logs-table thead th {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
             color: #71717a;
             background: linear-gradient(180deg, #fcfcfd 0%, #f6f7f8 100%);
             border-bottom: 1px solid #d4d4d8;
-            padding: 0.5rem 0.85rem;
             white-space: nowrap;
+            text-overflow: ellipsis;
         }
-        .logs-table thead th:first-child {
-            padding-left: 1rem;
+        .logs-table thead th:first-child,
+        .logs-table tbody td:first-child {
+            padding-left: 0.85rem;
         }
-        .logs-table thead th:last-child {
-            padding-right: 1rem;
+        .logs-table thead th:last-child,
+        .logs-table tbody td:last-child {
+            padding-right: 0.85rem;
         }
         .logs-table tbody tr.select-row {
             transition: background-color 0.18s ease, box-shadow 0.18s ease;
-            border-bottom: 1px solid #eceef0;
             background: #ffffff;
+        }
+        .logs-table tbody tr.select-row td {
+            border-bottom: 1px solid #e4e4e7;
         }
         .logs-table tbody tr.select-row:nth-child(even) {
             background: #fbfcfd;
@@ -86,42 +105,47 @@
         }
         .logs-table tbody tr.select-row.selected {
             background: linear-gradient(90deg, rgba(13, 40, 24, 0.07) 0%, #f4f4f5 55%) !important;
-            box-shadow: inset 3px 0 0 #0d2818;
+            box-shadow: inset 2px 0 0 #0d2818;
+        }
+        .logs-table tbody tr.select-row.selected td {
+            border-bottom-color: #d4d4d8;
         }
         .logs-table tbody td {
-            padding: 0.55rem 0.85rem;
-            vertical-align: middle;
+            font-size: 12px;
         }
-        .logs-table tbody td:first-child {
-            padding-left: 1rem;
-        }
-        .logs-table tbody td:last-child {
-            padding-right: 1rem;
+        .logs-table .cell-clip {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
         }
         .logs-id-badge {
             display: inline-flex;
             align-items: center;
+            max-width: 100%;
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 13px;
+            font-size: 10.5px;
             font-weight: 600;
             color: #0d2818;
             background: #ecfdf5;
             border: 1px solid #bbf7d0;
-            border-radius: 0.5rem;
-            padding: 0.2rem 0.55rem;
+            border-radius: 0.35rem;
+            padding: 0.12rem 0.35rem;
             letter-spacing: -0.02em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .metric-pill {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.3rem;
-            min-width: 3.25rem;
-            font-size: 13px;
+            gap: 0.15rem;
+            min-width: 0;
+            font-size: 10.5px;
             font-weight: 600;
             line-height: 1;
-            padding: 0.35rem 0.55rem;
-            border-radius: 0.5rem;
+            padding: 0.18rem 0.32rem;
+            border-radius: 0.35rem;
             border: 1px solid transparent;
         }
         .metric-pill--ok {
@@ -135,28 +159,54 @@
             border-color: #fde68a;
         }
         .metric-pill__dot {
-            width: 5px;
-            height: 5px;
+            width: 4px;
+            height: 4px;
             border-radius: 9999px;
             background: currentColor;
+            flex-shrink: 0;
+        }
+        .logs-table .quality-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.25rem;
+            flex-wrap: nowrap;
+            max-width: 100%;
+        }
+        .logs-table .metric-pill {
+            font-size: 10px;
+            padding: 0.14rem 0.28rem;
+            gap: 0.12rem;
+            white-space: nowrap;
         }
         .status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 0.35rem;
-            font-size: 12px;
+            gap: 0.25rem;
+            font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.02em;
-            padding: 0.3rem 0.65rem;
+            letter-spacing: 0.01em;
+            padding: 0.2rem 0.45rem;
             border-radius: 9999px;
             border: 1px solid transparent;
             white-space: nowrap;
         }
         .status-pill__dot {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 9999px;
             flex-shrink: 0;
+        }
+        .logs-table .status-pill {
+            font-size: 10px;
+            padding: 0.14rem 0.4rem;
+            gap: 0.18rem;
+        }
+        .logs-table .status-stack {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
         }
         .status-pill--pending {
             color: #1d4ed8;
@@ -647,22 +697,48 @@
             border-color: #163a23;
         }
         .lab-test-btn--sm {
-            font-size: 12px;
-            padding: 0.4rem 0.75rem;
+            font-size: 11px;
+            padding: 0.28rem 0.55rem;
+            gap: 0.25rem;
         }
         .lab-test-btn--xs {
-            font-size: 11px;
-            padding: 0.3rem 0.55rem;
+            font-size: 10px;
+            padding: 0.2rem 0.42rem;
+            gap: 0.2rem;
+            border-radius: 0.35rem;
         }
         .lab-test-btn svg {
             flex-shrink: 0;
-            width: 14px;
-            height: 14px;
+            width: 11px;
+            height: 11px;
             stroke: currentColor;
         }
+        /*
+          Short columns: fixed rem widths (content-sized).
+          Center + Source share leftover space evenly.
+          Equal cell padding above = equal visual gaps between columns.
+        */
+        .logs-table .col-id { width: 5.5rem; }
+        .logs-table .col-vehicle { width: 7rem; }
+        .logs-table .col-center { width: 22%; }
+        .logs-table .col-source { width: 16%; }
+        .logs-table .col-quality { width: 9.75rem; }
+        .logs-table .col-status { width: 5.75rem; }
         .logs-table .col-actions {
-            min-width: 8.5rem;
-            width: 8.5rem;
+            width: 6rem;
+            min-width: 6rem;
+            overflow: visible;
+            white-space: nowrap;
+        }
+        .logs-table .col-received { width: 5.5rem; }
+        .logs-table th.col-actions,
+        .logs-table td.col-actions {
+            overflow: visible;
+        }
+        .logs-table td.col-actions .lab-test-btn {
+            display: inline-flex;
+            width: auto;
+            max-width: none;
         }
     </style>
 </head>
@@ -949,74 +1025,66 @@
                         </div>
 
                         <div class="flex-1 overflow-auto logs-table-scroll min-h-0">
-                            <table class="logs-table w-full text-left border-collapse">
+                            <table class="logs-table w-full text-left">
                                 <thead class="sticky top-0 z-10">
                                     <tr>
-                                        <th>Entry ID</th>
-                                        <th>Vehicle</th>
-                                        <th>Center</th>
-                                        <th>Source</th>
-                                        <th class="text-center">Quality</th>
-                                        <th class="text-center">Status</th>
-                                        <th class="text-center col-actions">Actions</th>
-                                        <th class="text-right">Received</th>
+                                        <th class="col-id">Entry ID</th>
+                                        <th class="col-vehicle">Vehicle</th>
+                                        <th class="col-center">Center</th>
+                                        <th class="col-source">Source</th>
+                                        <th class="col-quality">Quality</th>
+                                        <th class="col-status">Status</th>
+                                        <th class="col-actions">Actions</th>
+                                        <th class="col-received">Received</th>
                                     </tr>
                                 </thead>
-                                <tbody id="logs-table-body" class="text-sm text-zinc-700">
+                                <tbody id="logs-table-body" class="text-xs text-zinc-700">
                                     @forelse($entries as $entry)
                                         @php
                                             $sourceLabel = $entry->sourced_from ?? 'Spot Buyer';
-                                            $sourceInitial = strtoupper(substr(preg_replace('/\s+/', '', $sourceLabel), 0, 2));
                                         @endphp
                                         <tr class="select-row group"
                                             data-id="{{ $entry->id }}"
                                             data-entry-id="{{ $entry->id }}">
-                                            <td class="whitespace-nowrap">
-                                                <span class="logs-id-badge">#{{ $entry->id }}</span>
-                                            </td>
-                                            <td class="whitespace-nowrap">
-                                                <div class="flex items-center gap-2.5">
-                                                    <span class="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200/70 flex items-center justify-center text-zinc-500 shrink-0">
-                                                        <i data-lucide="truck" class="w-3.5 h-3.5"></i>
-                                                    </span>
-                                                    <span class="font-mono text-[11px] font-semibold tracking-tight text-zinc-800">{{ $entry->truck_no }}</span>
+                                            <td class="col-id">
+                                                <div class="cell-clip">
+                                                    <span class="logs-id-badge" title="#{{ $entry->id }}">#{{ $entry->id }}</span>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <div class="flex items-center gap-2 min-w-0">
-                                                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-700/70 shrink-0"></i>
-                                                    <span class="text-zinc-600 font-medium truncate max-w-[140px]" title="{{ $entry->unit->name ?? 'N/A' }}">{{ $entry->unit->name ?? 'N/A' }}</span>
+                                            <td class="col-vehicle">
+                                                <div class="cell-clip">
+                                                    <span class="font-mono text-[11px] font-semibold tracking-tight text-zinc-800 block truncate" title="{{ $entry->truck_no }}">{{ $entry->truck_no }}</span>
                                                 </div>
                                             </td>
-                                            <td class="whitespace-nowrap">
-                                                <div class="flex items-center gap-2.5">
-                                                    <span class="w-8 h-8 rounded-full bg-gradient-to-br from-[#0d2818] to-[#1b4d3e] text-[10px] font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
-                                                        {{ $sourceInitial }}
-                                                    </span>
-                                                    <div class="min-w-0">
-                                                        <p class="font-semibold text-zinc-800 truncate max-w-[160px]" title="{{ $sourceLabel }}">{{ $sourceLabel }}</p>
-                                                        <p class="text-[10px] text-zinc-400 mt-0.5">{{ $entry->purchase_type ?? 'Depo' }}</p>
-                                                    </div>
+                                            <td class="col-center">
+                                                <div class="cell-clip">
+                                                    <span class="text-zinc-600 font-medium truncate text-[11px] block" title="{{ $entry->unit->name ?? 'N/A' }}">{{ $entry->unit->name ?? 'N/A' }}</span>
                                                 </div>
                                             </td>
-                                            <td class="text-center whitespace-nowrap">
-                                                <div class="inline-flex items-center gap-1.5">
-                                                    <span class="metric-pill {{ $entry->moisture > $settings->moisture_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}" title="Moisture">
+                                            <td class="col-source">
+                                                <div class="cell-clip">
+                                                    <p class="font-semibold text-zinc-800 truncate text-[11px]" title="{{ $sourceLabel }}">{{ $sourceLabel }}</p>
+                                                    <p class="text-[9px] text-zinc-400 mt-0.5 truncate">{{ $entry->purchase_type ?? 'Depo' }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="col-quality">
+                                                <div class="quality-inline" title="Moisture / FM / Damaged">
+                                                    <span class="metric-pill {{ $entry->moisture > $settings->moisture_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}">
                                                         <span class="metric-pill__dot"></span>
                                                         {{ number_format($entry->moisture, 1) }}%
                                                     </span>
-                                                    <span class="metric-pill {{ $entry->fm > $settings->fm_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}" title="Foreign Matter">
+                                                    <span class="metric-pill {{ $entry->fm > $settings->fm_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}">
                                                         <span class="metric-pill__dot"></span>
                                                         {{ number_format($entry->fm, 1) }}%
                                                     </span>
-                                                    <span class="metric-pill {{ $entry->dm > $settings->dm_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}" title="Damaged">
+                                                    <span class="metric-pill {{ $entry->dm > $settings->dm_threshold ? 'metric-pill--warn' : 'metric-pill--ok' }}">
                                                         <span class="metric-pill__dot"></span>
                                                         {{ number_format($entry->dm, 1) }}%
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td class="text-center row-status-cell whitespace-nowrap">
-                                                <div class="flex flex-col items-center gap-1">
+                                            <td class="col-status row-status-cell">
+                                                <div class="status-stack">
                                                     @if($entry->status === 'approved')
                                                         <span class="status-pill status-pill--approved"><span class="status-pill__dot"></span>Approved</span>
                                                     @elseif($entry->status === 'flagged')
@@ -1041,22 +1109,23 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="text-center col-actions" data-no-row-click>
+                                            <td class="col-actions" data-no-row-click>
                                                 <button type="button"
                                                     data-entry-id="{{ $entry->id }}"
                                                     onclick="event.stopPropagation(); openLabTestModalFromRow(this)"
-                                                    class="lab-test-row-btn lab-test-btn lab-test-btn--sm">
-                                                    <i data-lucide="flask-conical" class="w-3.5 h-3.5" aria-hidden="true"></i>
-                                                    <span>{{ $entry->lab_test_status ? 'Edit Lab Test' : 'Add Lab Test' }}</span>
+                                                    class="lab-test-row-btn lab-test-btn lab-test-btn--xs"
+                                                    title="{{ $entry->lab_test_status ? 'Edit lab test' : 'Add lab test' }}">
+                                                    <i data-lucide="flask-conical" class="w-3 h-3" aria-hidden="true"></i>
+                                                    <span>Lab Test</span>
                                                 </button>
                                             </td>
-                                            <td class="text-right whitespace-nowrap">
-                                                <div class="flex items-center justify-end gap-2">
-                                                    <div class="text-right">
-                                                        <p class="text-[11px] font-medium text-zinc-700">{{ $entry->created_at ? $entry->created_at->format('d M Y') : 'N/A' }}</p>
-                                                        <p class="text-[10px] text-zinc-400 font-mono mt-0.5">{{ $entry->created_at ? $entry->created_at->format('H:i') : '' }}</p>
+                                            <td class="col-received">
+                                                <div class="flex items-center gap-1">
+                                                    <div>
+                                                        <p class="text-[10.5px] font-medium text-zinc-700 whitespace-nowrap">{{ $entry->created_at ? $entry->created_at->format('d M Y') : 'N/A' }}</p>
+                                                        <p class="text-[9px] text-zinc-400 font-mono mt-0.5">{{ $entry->created_at ? $entry->created_at->format('H:i') : '' }}</p>
                                                     </div>
-                                                    <i data-lucide="chevron-right" class="logs-row-chevron w-4 h-4 shrink-0"></i>
+                                                    <i data-lucide="chevron-right" class="logs-row-chevron w-3.5 h-3.5 shrink-0"></i>
                                                 </div>
                                             </td>
                                         </tr>
@@ -1699,6 +1768,25 @@
         </div>
     </div>
 
+    <!-- Photo lightbox (full-size preview) — inline styles so Vite/Tailwind purge can't hide the close control -->
+    <div id="photo-lightbox" style="display:none; position:fixed; inset:0; z-index:9999;" role="dialog" aria-modal="true" aria-label="Photo preview">
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.82); cursor:zoom-out;" onclick="closePhotoLightbox()" aria-hidden="true"></div>
+
+        <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:24px; pointer-events:none;">
+            <div style="pointer-events:auto; display:flex; flex-direction:column; align-items:center; gap:12px; max-width:min(92vw, 72rem);">
+                <div style="position:relative; display:inline-block; max-width:100%;">
+                    <img id="photo-lightbox-img" src="" alt="Field capture" style="display:block; max-width:100%; max-height:78vh; object-fit:contain; border-radius:8px; background:#18181b; box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+                </div>
+                <button type="button" onclick="closePhotoLightbox()"
+                    style="pointer-events:auto; padding:10px 20px; border-radius:8px; border:0; background:#fff; color:#111; font-weight:700; font-size:14px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,0.35);">
+                    Close
+                </button>
+                <p id="photo-lightbox-caption" style="margin:0; color:#e4e4e7; font-size:14px; font-weight:500; text-align:center;"></p>
+                <a id="photo-lightbox-open" href="#" target="_blank" rel="noopener" style="color:#6ee7b7; font-size:12px; font-weight:600;">Open original in new tab</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Procurement Center Modal -->
     <div id="add-center-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white border border-zinc-200 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col gap-4 text-left">
@@ -2075,9 +2163,9 @@
 
                 return `
                     <div class="flex flex-col gap-1.5 bg-zinc-50 border border-zinc-200/50 rounded-lg p-2.5">
-                        <div class="aspect-video w-full rounded-md overflow-hidden bg-zinc-100 border border-zinc-200/30">
-                            <img src="${url}" alt="${safeCaption}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300">
-                        </div>
+                        <button type="button" onclick='openPhotoLightbox(${JSON.stringify(url)}, ${JSON.stringify(caption)})' class="aspect-video w-full rounded-md overflow-hidden bg-zinc-100 border border-zinc-200/30 cursor-zoom-in text-left p-0">
+                            <img src="${url}" alt="${safeCaption}" loading="lazy" class="w-full h-full object-cover hover:scale-105 transition duration-300 pointer-events-none">
+                        </button>
                         <span class="text-[9px] text-zinc-400 font-medium">${safeCaption}</span>
                     </div>
                 `;
@@ -2159,6 +2247,10 @@
                 return;
             }
 
+            if (typeof closePhotoLightbox === 'function') {
+                closePhotoLightbox();
+            }
+
             const drawer = document.getElementById('drawer');
             const backdrop = document.getElementById('drawer-backdrop');
             drawer.classList.add('translate-x-full');
@@ -2182,6 +2274,48 @@
         }
 
         window.closeDrawer = closeDrawer;
+
+        function openPhotoLightbox(url, caption = '') {
+            if (!url) return;
+            const lightbox = document.getElementById('photo-lightbox');
+            const img = document.getElementById('photo-lightbox-img');
+            const captionEl = document.getElementById('photo-lightbox-caption');
+            const openLink = document.getElementById('photo-lightbox-open');
+            if (!lightbox || !img) return;
+
+            img.src = url;
+            img.alt = caption || 'Field capture';
+            if (captionEl) captionEl.textContent = caption || 'Field capture';
+            if (openLink) {
+                openLink.href = url;
+                openLink.style.display = url ? '' : 'none';
+            }
+
+            lightbox.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePhotoLightbox() {
+            const lightbox = document.getElementById('photo-lightbox');
+            const img = document.getElementById('photo-lightbox-img');
+            if (!lightbox) return;
+            lightbox.style.display = 'none';
+            document.body.style.overflow = '';
+            if (img) img.src = '';
+        }
+
+        window.openPhotoLightbox = openPhotoLightbox;
+        window.closePhotoLightbox = closePhotoLightbox;
+
+        // Esc closes photo lightbox first, then drawer
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Escape') return;
+            const lightbox = document.getElementById('photo-lightbox');
+            if (lightbox && lightbox.style.display === 'block') {
+                closePhotoLightbox();
+                e.stopPropagation();
+            }
+        }, true);
 
         let pendingStatusTarget = null;
 
