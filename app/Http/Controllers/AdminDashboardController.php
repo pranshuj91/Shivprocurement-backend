@@ -117,7 +117,9 @@ class AdminDashboardController extends Controller
             }
         }
 
-        $entries = $query->paginate(15)->withQueryString();
+        $entries = $query->paginate(15)->appends(
+            array_merge($request->except('page'), ['tab' => 'logs'])
+        );
 
         $logsEntriesById = $entries->getCollection()->mapWithKeys(
             fn (UnloadingEntry $entry) => [$entry->id => $entry]

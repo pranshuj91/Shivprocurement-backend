@@ -668,6 +668,14 @@
         #drawer.hidden {
             display: none !important;
         }
+        #view-dashboard.hidden,
+        #view-logs.hidden,
+        #view-units.hidden,
+        #view-supervisors.hidden,
+        #view-analytics.hidden,
+        #view-settings.hidden {
+            display: none !important;
+        }
         #lab-test-modal.hidden {
             display: none !important;
         }
@@ -743,6 +751,16 @@
     </style>
 </head>
 <body class="bg-[#f5f8f5] text-zinc-900 h-screen w-screen overflow-hidden flex">
+    @php
+        $activeTab = 'dashboard';
+        if (request('tab') === 'logs' || request()->has('page') || request()->anyFilled(['search', 'unit_id', 'status', 'date_filter'])) {
+            $activeTab = 'logs';
+        } elseif (in_array(request('tab'), ['units', 'supervisors', 'analytics', 'settings'], true)) {
+            $activeTab = request('tab');
+        }
+        $navActiveClass = 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0d2818] to-[#143d24] text-white border border-[#0d2818] transition duration-200 cursor-pointer text-left shadow-md shadow-[#0d2818]/15 translate-x-0.5';
+        $navIdleClass = 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left';
+    @endphp
 
     <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
@@ -762,33 +780,33 @@
         </div>
         <!-- Navigation Links -->
         <nav class="flex-1 px-4 py-6 space-y-1.5">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#0d2818] to-[#143d24] text-white border border-[#0d2818] transition duration-200 cursor-pointer text-left shadow-md shadow-[#0d2818]/15 translate-x-0.5">
-                <i data-lucide="layout-dashboard" class="w-4 h-4 text-emerald-200"></i>
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="{{ $activeTab === 'dashboard' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 {{ $activeTab === 'dashboard' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Dashboard
             </button>
 
-            <button onclick="switchTab('logs')" id="nav-logs" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
-                <i data-lucide="clipboard-list" class="w-4 h-4 text-zinc-400"></i>
+            <button onclick="switchTab('logs')" id="nav-logs" class="{{ $activeTab === 'logs' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="clipboard-list" class="w-4 h-4 {{ $activeTab === 'logs' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Procurement Logs
             </button>
             
-            <button onclick="switchTab('units')" id="nav-units" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
-                <i data-lucide="git-branch" class="w-4 h-4 text-zinc-400"></i>
+            <button onclick="switchTab('units')" id="nav-units" class="{{ $activeTab === 'units' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="git-branch" class="w-4 h-4 {{ $activeTab === 'units' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Procurement Centers
             </button>
 
-            <button onclick="switchTab('supervisors')" id="nav-supervisors" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
-                <i data-lucide="users" class="w-4 h-4 text-zinc-400"></i>
+            <button onclick="switchTab('supervisors')" id="nav-supervisors" class="{{ $activeTab === 'supervisors' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="users" class="w-4 h-4 {{ $activeTab === 'supervisors' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Supervisors List
             </button>
 
-            <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
-                <i data-lucide="bar-chart-3" class="w-4 h-4 text-zinc-400"></i>
+            <button onclick="switchTab('analytics')" id="nav-analytics" class="{{ $activeTab === 'analytics' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="bar-chart-3" class="w-4 h-4 {{ $activeTab === 'analytics' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Analytics & Reports
             </button>
 
-            <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-zinc-800 hover:bg-white hover:border-zinc-200/60 hover:shadow-xs hover:translate-x-0.5 transition duration-200 border border-transparent cursor-pointer text-left">
-                <i data-lucide="settings" class="w-4 h-4 text-zinc-400"></i>
+            <button onclick="switchTab('settings')" id="nav-settings" class="{{ $activeTab === 'settings' ? $navActiveClass : $navIdleClass }}">
+                <i data-lucide="settings" class="w-4 h-4 {{ $activeTab === 'settings' ? 'text-emerald-200' : 'text-zinc-400' }}"></i>
                 Settings
             </button>
         </nav>
@@ -836,7 +854,7 @@
             <!-- Scrollable Workspace Container -->
             <div class="flex-1 overflow-y-auto flex flex-col bg-[#f5f8f5]">
                      <!-- Tab 1: Dashboard Feed -->
-            <div id="view-dashboard" class="flex flex-col">
+            <div id="view-dashboard" class="{{ $activeTab === 'dashboard' ? '' : 'hidden ' }}flex flex-col">
                 <div class="px-8 pt-6 pb-0 shrink-0">
                     <h3 class="text-base font-bold text-zinc-900">Dashboard</h3>
                     <p class="text-[11px] text-zinc-500 mt-0.5">Overview of procurement activity and quality metrics.</p>
@@ -959,7 +977,7 @@
             </div>
 
             <!-- Tab 2: Procurement Logs (filters + entries table) -->
-            <div id="view-logs" class="hidden flex flex-col flex-1 min-h-0">
+            <div id="view-logs" class="{{ $activeTab === 'logs' ? '' : 'hidden ' }}flex flex-col flex-1 min-h-0">
                 <section class="flex-1 px-8 pb-8 pt-5 flex flex-col min-h-0">
                     <div class="logs-table-card flex flex-col flex-1 min-h-0 rounded-2xl border border-[#dee4de] bg-white overflow-hidden">
                         <!-- Compact toolbar: title, filters, entry count -->
@@ -1163,7 +1181,7 @@
             </div>
 
             <!-- Tab 2: Procurement Centers -->
-            <div id="view-units" class="hidden flex flex-col">
+            <div id="view-units" class="{{ $activeTab === 'units' ? '' : 'hidden ' }}flex flex-col">
                 <div class="px-8 pt-6 pb-0 shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="text-left">
                         <h3 class="text-base font-bold text-zinc-900">Procurement Centers</h3>
@@ -1240,7 +1258,7 @@
             </div>
 
             <!-- Tab 3: Supervisors List -->
-            <div id="view-supervisors" class="hidden flex flex-col">
+            <div id="view-supervisors" class="{{ $activeTab === 'supervisors' ? '' : 'hidden ' }}flex flex-col">
                 <div class="px-8 pt-6 pb-0 shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div class="text-left">
                         <h3 class="text-base font-bold text-zinc-900">Unloading Supervisors</h3>
@@ -1340,7 +1358,7 @@
             </div>
 
             <!-- Tab 4: Analytics & Reports -->
-            <div id="view-analytics" class="hidden flex flex-col">
+            <div id="view-analytics" class="{{ $activeTab === 'analytics' ? '' : 'hidden ' }}flex flex-col">
                 <div class="px-8 pt-6 pb-0 shrink-0">
                     <h3 class="text-base font-bold text-zinc-900">Analytics & Reports</h3>
                     <p class="text-[11px] text-zinc-500 mt-0.5">Quality compliance, intake trends, and supplier performance at a glance.</p>
@@ -1467,7 +1485,7 @@
             </div>
 
             <!-- Tab 5: Settings (Profile) -->
-            <div id="view-settings" class="hidden flex flex-col">
+            <div id="view-settings" class="{{ $activeTab === 'settings' ? '' : 'hidden ' }}flex flex-col">
                 <div class="px-8 pt-6 pb-0 shrink-0">
                     <h3 class="text-base font-bold text-zinc-900">Profile Settings</h3>
                     <p class="text-[11px] text-zinc-500 mt-0.5">Update your account details and password for the HQ portal.</p>
@@ -1941,12 +1959,9 @@
         document.addEventListener("DOMContentLoaded", function() {
             lucide.createIcons();
 
-            @if(request('tab') === 'logs' || request()->anyFilled(['search', 'unit_id', 'status', 'date_filter']))
-                switchTab('logs');
-            @elseif(request('tab') === 'settings')
-                switchTab('settings');
-            @elseif(request('tab') === 'analytics')
-                switchTab('analytics');
+            // Tab is already rendered server-side for the active query — only sync URL / charts
+            @if($activeTab !== 'dashboard')
+                switchTab(@json($activeTab));
             @endif
 
             document.addEventListener('click', function(e) {
@@ -2643,20 +2658,21 @@
         }
 
         function switchTab(tabId) {
-            // Hide all tabs
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-logs').classList.add('hidden');
-            document.getElementById('view-units').classList.add('hidden');
-            document.getElementById('view-supervisors').classList.add('hidden');
-            document.getElementById('view-analytics').classList.add('hidden');
-            document.getElementById('view-settings').classList.add('hidden');
+            const views = ['dashboard', 'logs', 'units', 'supervisors', 'analytics', 'settings'];
+            const target = document.getElementById('view-' + tabId);
+            if (!target || !views.includes(tabId)) {
+                return;
+            }
 
-            // Show target tab
-            document.getElementById('view-' + tabId).classList.remove('hidden');
+            // Hide all tabs, then show the requested one (never leave all hidden)
+            views.forEach(id => {
+                const el = document.getElementById('view-' + id);
+                if (el) el.classList.add('hidden');
+            });
+            target.classList.remove('hidden');
 
             // Toggle active classes on nav buttons
-            const navs = ['dashboard', 'logs', 'units', 'supervisors', 'analytics', 'settings'];
-            navs.forEach(id => {
+            views.forEach(id => {
                 const btn = document.getElementById('nav-' + id);
                 if (!btn) return;
                 const icon = btn.querySelector('[data-lucide]');
@@ -2677,11 +2693,20 @@
 
             const url = new URL(window.location);
             if (tabId === 'dashboard') {
-                url.searchParams.delete('tab');
+                // Leaving logs: drop pagination/filters so Dashboard stays clean on refresh
+                ['tab', 'page', 'search', 'unit_id', 'status', 'date_filter'].forEach(key => {
+                    url.searchParams.delete(key);
+                });
+            } else if (tabId === 'logs') {
+                url.searchParams.set('tab', 'logs');
             } else {
                 url.searchParams.set('tab', tabId);
+                url.searchParams.delete('page');
             }
             window.history.replaceState({}, '', url);
+
+            const workspace = document.querySelector('main .flex-1.overflow-y-auto');
+            if (workspace) workspace.scrollTop = 0;
 
             if (tabId === 'analytics' && typeof window.initAnalyticsCharts === 'function') {
                 requestAnimationFrame(() => {
