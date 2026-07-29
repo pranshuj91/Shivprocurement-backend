@@ -984,13 +984,27 @@
                         <div class="shrink-0 px-4 py-2.5 border-b border-zinc-100 bg-gradient-to-r from-white via-white to-emerald-50/30 space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <h3 class="text-sm font-bold text-zinc-900">Procurement Logs</h3>
-                                <p class="text-[11px] text-zinc-400 shrink-0">
-                                    @if($entries->total() > 0)
-                                        {{ number_format($entries->total()) }} {{ Str::plural('entry', $entries->total()) }} · {{ $entries->firstItem() }}–{{ $entries->lastItem() }}
-                                    @else
-                                        No records
-                                    @endif
-                                </p>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <p class="text-[11px] text-zinc-400">
+                                        @if($entries->total() > 0)
+                                            {{ number_format($entries->total()) }} {{ Str::plural('entry', $entries->total()) }} · {{ $entries->firstItem() }}–{{ $entries->lastItem() }}
+                                        @else
+                                            No records
+                                        @endif
+                                    </p>
+                                    <a href="{{ route('admin.entries.export', array_merge(request()->except(['tab', 'page']), ['format' => 'csv'])) }}"
+                                       class="logs-filter-btn logs-filter-btn--ghost"
+                                       title="Download filtered logs as CSV">
+                                        <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                        CSV
+                                    </a>
+                                    <a href="{{ route('admin.entries.export', array_merge(request()->except(['tab', 'page']), ['format' => 'xlsx'])) }}"
+                                       class="logs-filter-btn logs-filter-btn--ghost"
+                                       title="Download filtered logs as Excel">
+                                        <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                                        Excel
+                                    </a>
+                                </div>
                             </div>
                             <form action="{{ route('admin.dashboard') }}" method="GET" class="logs-filter-bar">
                                 <input type="hidden" name="tab" value="logs">
