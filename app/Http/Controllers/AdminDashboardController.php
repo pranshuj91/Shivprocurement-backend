@@ -6,11 +6,15 @@ use App\Models\ProcurementSetting;
 use App\Models\Unit;
 use App\Models\UnloadingEntry;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminDashboardController extends Controller
 {
@@ -81,41 +85,7 @@ class AdminDashboardController extends Controller
         ];
 
         // 2. Build entries query with filters
-        $query = UnloadingEntry::with(['unit', 'mediaLogs', 'labRecordedBy'])
-            ->orderBy('created_at', 'desc');
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('truck_no', 'like', "%{$search}%")
-                  ->orWhere('sourced_from', 'like', "%{$search}%")
-                  ->orWhere('id', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('unit_id')) {
-            $query->where('unit_id', $request->input('unit_id'));
-        }
-
-        if ($request->filled('status')) {
-            $status = $request->input('status');
-            if ($status === 'out_of_spec') {
-                $settings->applyOutOfSpecScope($query);
-            } else {
-                $query->where('status', $status);
-            }
-        }
-
-        if ($request->filled('date_filter')) {
-            $dateFilter = $request->input('date_filter');
-            if ($dateFilter === 'today') {
-                $query->whereDate('created_at', today());
-            } elseif ($dateFilter === 'week') {
-                $query->where('created_at', '>=', now()->subDays(7));
-            } elseif ($dateFilter === 'month') {
-                $query->where('created_at', '>=', now()->subDays(30));
-            }
-        }
+        $query = $this->filteredEntriesQuery($request, $settings);
 
         $entries = $query->paginate(15)->appends(
             array_merge($request->except('page'), ['tab' => 'logs'])
@@ -405,6 +375,150 @@ class AdminDashboardController extends Controller
             'success' => true,
             'message' => 'Supervisor added successfully.',
             'supervisor' => $supervisor,
+        ]);
+    }
+
+    public function exportEntries(Request $request)
+    {
+        $format = strtolower((string) $request->input('format', 'xlsx'));
+        if (! in_array($format, ['csv', 'xlsx'], true)) {
+            abort(422, 'Invalid export format. Use csv or xlsx.');
+        }
+
+        $settings = ProcurementSetting::current();
+        $entries = $this->filteredEntriesQuery($request, $settings)
+            ->with(['unit', 'createdBy', 'labRecordedBy'])
+            ->get();
+
+        $headers = [
+            'Entry ID',
+            'Vehicle',
+            'Center',
+            'Source',
+            'Purchase Type',
+            'Moisture %',
+            'FM %',
+            'DM %',
+            'Status',
+            'Lab Test Status',
+            'Lab Moisture %',
+            'Lab FM %',
+            'Lab DM %',
+            'Lab Name',
+            'Created By',
+            'Remarks',
+            'Received At',
+        ];
+
+        $rows = $entries->map(function (UnloadingEntry $entry) {
+            return [
+                $entry->id,
+                $entry->truck_no,
+                $entry->unit->name ?? '',
+                $entry->sourced_from ?? '',
+                $entry->purchase_type ?? '',
+                $entry->moisture,
+                $entry->fm,
+                $entry->dm,
+                $entry->status,
+                $entry->lab_test_status ?? '',
+                $entry->lab_moisture,
+                $entry->lab_fm,
+                $entry->lab_dm,
+                $entry->lab_name ?? '',
+                $entry->createdBy->name ?? '',
+                $entry->remarks ?? '',
+                optional($entry->created_at)?->timezone(config('app.timezone'))->format('Y-m-d H:i:s') ?? '',
+            ];
+        })->all();
+
+        $stamp = now()->timezone(config('app.timezone'))->format('Y-m-d_His');
+        $filename = "procurement-logs_{$stamp}.{$format}";
+
+        if ($format === 'csv') {
+            return $this->streamCsvExport($filename, $headers, $rows);
+        }
+
+        return $this->streamXlsxExport($filename, $headers, $rows);
+    }
+
+    private function filteredEntriesQuery(Request $request, ProcurementSetting $settings): Builder
+    {
+        $query = UnloadingEntry::with(['unit', 'mediaLogs', 'labRecordedBy'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('truck_no', 'like', "%{$search}%")
+                  ->orWhere('sourced_from', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->input('unit_id'));
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            if ($status === 'out_of_spec') {
+                $settings->applyOutOfSpecScope($query);
+            } else {
+                $query->where('status', $status);
+            }
+        }
+
+        if ($request->filled('date_filter')) {
+            $dateFilter = $request->input('date_filter');
+            if ($dateFilter === 'today') {
+                $query->whereDate('created_at', today());
+            } elseif ($dateFilter === 'week') {
+                $query->where('created_at', '>=', now()->subDays(7));
+            } elseif ($dateFilter === 'month') {
+                $query->where('created_at', '>=', now()->subDays(30));
+            }
+        }
+
+        return $query;
+    }
+
+    private function streamCsvExport(string $filename, array $headers, array $rows): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $handle = fopen('php://output', 'w');
+            // Excel-friendly UTF-8 BOM
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, $headers);
+            foreach ($rows as $row) {
+                fputcsv($handle, $row);
+            }
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    private function streamXlsxExport(string $filename, array $headers, array $rows): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $spreadsheet = new Spreadsheet;
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Procurement Logs');
+            $sheet->fromArray($headers, null, 'A1');
+            if ($rows !== []) {
+                $sheet->fromArray($rows, null, 'A2');
+            }
+            $sheet->getStyle('A1:'.$sheet->getHighestColumn().'1')->getFont()->setBold(true);
+            foreach (range('A', $sheet->getHighestColumn()) as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
+            $spreadsheet->disconnectWorksheets();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 

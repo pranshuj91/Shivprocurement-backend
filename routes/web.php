@@ -35,6 +35,7 @@ Route::middleware(['auth', 'lab'])->group(function () {
 // Protected Admin Dashboard Routes
 Route::middleware(['auth', 'manager'])->group(function () {
     Route::get('/admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/entries/export', [AdminDashboardController::class, 'exportEntries'])->name('admin.entries.export');
     Route::get('/admin/stats', [AdminDashboardController::class, 'getStatsJson'])->name('admin.stats.json');
     Route::post('/admin/entries/{id}/status', [AdminDashboardController::class, 'updateStatus'])->name('admin.entries.status');
     Route::delete('/admin/entries/{id}', [AdminDashboardController::class, 'destroyEntry'])->name('admin.entries.destroy');
