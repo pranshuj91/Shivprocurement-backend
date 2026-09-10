@@ -18,5 +18,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/suppliers', [UnloadingApiController::class, 'getSuppliers']);
     Route::get('/entries', [UnloadingApiController::class, 'getEntries']);
     Route::post('/entries', [UnloadingApiController::class, 'storeEntry']);
+    Route::post('/entries/{id}/media', [UnloadingApiController::class, 'appendMedia']);
 });
 

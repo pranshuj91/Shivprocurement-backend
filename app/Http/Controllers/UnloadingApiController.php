@@ -229,6 +229,68 @@ class UnloadingApiController extends Controller
         ], 201);
     }
 
+    /**
+     * Append a single media item to an entry (chunked upload from mobile).
+     */
+    public function appendMedia(Request $request, string $id)
+    {
+        $entry = UnloadingEntry::with(['unit', 'mediaLogs'])->find($id);
+        if (! $entry) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Entry not found.',
+            ], 404);
+        }
+
+        $user = $request->user();
+        if ($entry->created_by && $user && (int) $entry->created_by !== (int) $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to update this entry.',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'type'    => 'required|string|max:50',
+            'data'    => 'required|string',
+            'caption' => 'nullable|string|max:500',
+            'isVideo' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $type = $request->input('type');
+        if ($request->boolean('isVideo') && $type !== 'video') {
+            $type = 'video';
+        }
+
+        $stored = $this->storeMediaItem($entry, [
+            'type'    => $type,
+            'data'    => $request->input('data'),
+            'caption' => $request->input('caption'),
+        ]);
+
+        if (! $stored) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to store media item.',
+            ], 422);
+        }
+
+        $savedEntry = UnloadingEntry::with(['unit', 'mediaLogs'])->find($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Media uploaded successfully',
+            'entry'   => $this->formatEntry($savedEntry),
+        ]);
+    }
+
     private function formatEntry(UnloadingEntry $e): array
     {
         return [
@@ -260,13 +322,13 @@ class UnloadingApiController extends Controller
         ];
     }
 
-    private function storeMediaItem(UnloadingEntry $entry, array $mediaItem): void
+    private function storeMediaItem(UnloadingEntry $entry, array $mediaItem): bool
     {
         $type       = $mediaItem['type'] ?? 'unknown';
         $base64Data = $mediaItem['data'] ?? '';
 
         if ($base64Data === '' || $base64Data === null) {
-            return;
+            return false;
         }
 
         // Existing media path — preserve/update caption only
@@ -275,7 +337,7 @@ class UnloadingApiController extends Controller
                 'caption' => $mediaItem['caption'] ?? null,
             ]);
 
-            return;
+            return true;
         }
 
         $ext = 'jpg';
@@ -289,7 +351,7 @@ class UnloadingApiController extends Controller
         if (preg_match('/^data:[^;]+;base64,(.*)$/', $base64Data, $matches)) {
             $raw = $matches[1];
             if (preg_match('/^data:image\/(\w+);base64,/', $base64Data, $t)) {
-                $ext = $t[1];
+                $ext = $t[1] === 'jpeg' ? 'jpg' : $t[1];
             } elseif (preg_match('/^data:audio\/(\w+);base64,/', $base64Data, $t)) {
                 $ext = $t[1];
             } elseif (preg_match('/^data:video\/(\w+);base64,/', $base64Data, $t)) {
@@ -301,7 +363,7 @@ class UnloadingApiController extends Controller
 
         $decoded = base64_decode($raw, true);
         if ($decoded === false || $decoded === '') {
-            return;
+            return false;
         }
 
         $filename = $type.'_'.uniqid().'.'.$ext;
@@ -313,5 +375,7 @@ class UnloadingApiController extends Controller
             'file_path' => '/storage/'.$path,
             'caption'   => $mediaItem['caption'] ?? null,
         ]);
+
+        return true;
     }
 }
